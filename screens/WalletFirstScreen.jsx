@@ -5,7 +5,11 @@ import { View, Image, Text } from 'react-native';
 // import ButtonGradient from '../components/ButtonGradient'
 
 function WalletFirstScreen() {
-  const [totalChaak, setTotalChaak] = useState(0);
+    const [totalChaak, setTotalChaak] = useState(0);
+    const handleRedeem = () => {
+        
+    }
+    
   return (
     <View style={{alignItems: 'center', backgroundColor: '#00BBB4', flex: 1}}>
       <Image
