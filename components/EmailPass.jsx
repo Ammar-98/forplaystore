@@ -1,7 +1,7 @@
-import React from 'react'
-import {View,TextInput,Image,StyleSheet} from "react-native"
+import React from 'react';
+import {View, TextInput, Image, StyleSheet} from 'react-native';
 
-function EmailPass({handleEmailChange,handlePasswordChange}) {
+function EmailPass({handleEmailChange, handlePasswordChange}) {
   return (
     <View>
       <View style={styles.inputContainer}>
@@ -14,6 +14,7 @@ function EmailPass({handleEmailChange,handlePasswordChange}) {
           placeholder="Email ID"
           keyboardType="email-address"
           autoCapitalize="none"
+          placeholderTextColor="white"
           onChangeText={handleEmailChange}
         />
       </View>
@@ -26,6 +27,7 @@ function EmailPass({handleEmailChange,handlePasswordChange}) {
           style={styles.input}
           placeholder="Password"
           secureTextEntry
+          placeholderTextColor="white"
           onChangeText={handlePasswordChange}
         />
       </View>
@@ -54,5 +56,4 @@ const styles = StyleSheet.create({
   },
 });
 
-
-export default EmailPass
+export default EmailPass;

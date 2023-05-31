@@ -12,14 +12,20 @@ import {
 import DropdownMenu from '../components/DropdownMenu';
 import Button from '../components/Button';
 import CheckBox from '@react-native-community/checkbox';
+import { authSlice } from '../store/authSlice'
+import {useSelector, useDispatch} from 'react-redux';
 
-function Screen1({navigation}) {
+function CompleteProfileScreen() {
+  const dispatch = useDispatch();
+  const actions = authSlice.actions;
+
   const [desc, setDesc] = useState('');
   const [agree, setAgree] = useState('');
 
   const handleSignup = () => {
-    navigation.navigate("HomeScreen")  
-  }
+    dispatch(actions.setAuth())
+    // navigation.navigate('HomeScreen');
+  };
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -72,7 +78,7 @@ function Screen1({navigation}) {
             width: '100%',
             alignItems: 'center',
           }}>
-          <DropdownMenu label={'Age'}></DropdownMenu>
+          <DropdownMenu/> 
         </View>
         <TextInput
           multiline={true}
@@ -163,4 +169,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Screen1;
+export default CompleteProfileScreen;

@@ -1,7 +1,7 @@
 import React from 'react'
 import {View, TouchableOpacity, Image, StyleSheet} from 'react-native';
 
-function NavBarBottom() {
+function NavBarBottom({navigation}) {
   return (
     <View style={styles.bottomNavbar}>
       <TouchableOpacity style={styles.navbarButton}>
@@ -10,7 +10,8 @@ function NavBarBottom() {
           source={require('../assets/home.png')}
         />
       </TouchableOpacity>
-      <TouchableOpacity style={styles.navbarButton}>
+      <TouchableOpacity style={styles.navbarButton}
+        onPress={() => { navigation.navigate('WalletFirstScreen'); }}>
         <Image
           style={{width: 28, height: 36}}
           source={require('../assets/wallet.png')}

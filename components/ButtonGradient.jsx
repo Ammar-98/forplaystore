@@ -2,18 +2,28 @@ import React from 'react'
 import LinearGradient from 'react-native-linear-gradient'
 import { Text,TouchableOpacity,StyleSheet } from 'react-native'
 
-function ButtonGradient({width,height,title}) {
-    return (
-      <TouchableOpacity style={{width: width, height: height}}>
-        <LinearGradient
-          start={{x: 0, y: 0}}
-          end={{x: 1, y: 0}}
-          colors={['#525461', '#343643', '#1B1D2A']}
-          style={styles.linearGradient}>
-          <Text style={styles.buttonText}>{title}</Text>
-        </LinearGradient>
-      </TouchableOpacity>
-    );
+function ButtonGradient({width, height, title, handleNavigate}) {
+  return (
+    <TouchableOpacity
+      style={{width: width, height: height}}
+      // onPress={() => handleNavigate()}
+      onPress={
+        handleNavigate
+          ? () => handleNavigate()
+          : () => {
+              console.log('no handle function');
+            }
+      }
+    >
+      <LinearGradient
+        start={{x: 0, y: 0}}
+        end={{x: 1, y: 0}}
+        colors={['#525461', '#343643', '#1B1D2A']}
+        style={styles.linearGradient}>
+        <Text style={styles.buttonText}>{title}</Text>
+      </LinearGradient>
+    </TouchableOpacity>
+  );
 }
 
 var styles = StyleSheet.create({
@@ -22,6 +32,7 @@ var styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems:"center",
     borderRadius: 5,
+    borderWidth:1
   },
   buttonText: {
     // flex:1,

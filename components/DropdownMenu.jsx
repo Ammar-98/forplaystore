@@ -8,19 +8,21 @@ import {
   View,
 } from 'react-native';
 import {Dropdown} from 'react-native-element-dropdown';
-import axios from 'axios';
+// import axios from 'axios';
 // import {BASE_URL, API_KEY} from '@env';
 
 const DropdownMenu = () => {
   const AgeData = [
-    {label: '1', value: '1'},
-    {label: '2', value: '2'},
-    {label: '3', value: '3'},
-    {label: '4', value: '4'},
-    {label: '5', value: '5'},
-    {label: '6', value: '6'},
-    {label: '7', value: '7'},
-    {label: '8', value: '8'},
+    {label: '1  -  10', value: '1'},
+    {label: '11  -  20', value: '2'},
+    {label: '21  -  30', value: '3'},
+    {label: '31  -  40', value: '4'},
+    {label: '41  -  50', value: '5'},
+    {label: '51  -  60', value: '6'},
+    {label: '61  -  70', value: '7'},
+    {label: '71  -  80', value: '8'},
+    {label: '81  -  90', value: '9'},
+    {label: '91  -  100', value: '10'},
   ];
   const GenderData = [
     {label: 'Male', value: '1'},
@@ -32,22 +34,25 @@ const DropdownMenu = () => {
     {label: 'Item 2', value: '2'},
     {label: 'Item 3', value: '3'},
     {label: 'Item 4', value: '4'},
-
   ];
-    
-    const LocationData = [
-      {label: 'Item 1', value: '1'},
-      {label: 'Item 2', value: '2'},
-      {label: 'Item 3', value: '3'},
-      {label: 'Item 4', value: '4'},
-    ];
+
+  const LocationData = [
+    {label: 'Item 1', value: '1'},
+    {label: 'Item 2', value: '2'},
+    {label: 'Item 3', value: '3'},
+    {label: 'Item 4', value: '4'},
+  ];
   const [age, setAge] = useState(null);
   const [gender, setGender] = useState(null);
-    const [industry, setIndustry] = useState(null);
-    
+  const [industry, setIndustry] = useState(null);
+  const [location, setLocation] = useState(null);
+  const [residence, setResidence] = useState(null);
+
   const [ageName, setAgeName] = useState(null);
   const [genderName, setGenderName] = useState(null);
   const [industryName, setIndustryName] = useState(null);
+  const [locationName, setLocationName] = useState(null);
+  const [residenceName, setResidenceName] = useState(null);
   const [isFocus, setIsFocus] = useState(false);
   return (
     <View style={{width: '88%'}}>
@@ -61,7 +66,7 @@ const DropdownMenu = () => {
         selectedTextStyle={styles.selectedTextStyle}
         inputSearchStyle={styles.inputSearchStyle}
         iconStyle={styles.iconStyle}
-        itemTextStyle={{textAlign:'center'}}
+        itemTextStyle={{textAlign: 'center'}}
         data={AgeData}
         // search
         maxHeight={300}
@@ -136,12 +141,12 @@ const DropdownMenu = () => {
         valueField="value"
         placeholder={!isFocus ? 'Location' : '...'}
         searchPlaceholder="Search..."
-        value={industry}
+        value={location}
         onFocus={() => setIsFocus(true)}
         onBlur={() => setIsFocus(false)}
         onChange={item => {
-          setIndustry(item.value);
-          setIndustryName(item.label);
+          setLocation(item.value);
+          setLocationName(item.label);
           setIsFocus(false);
         }}
       />
@@ -158,12 +163,12 @@ const DropdownMenu = () => {
         valueField="value"
         placeholder={!isFocus ? 'Residence' : '...'}
         searchPlaceholder="Search..."
-        value={industry}
+        value={residence}
         onFocus={() => setIsFocus(true)}
         onBlur={() => setIsFocus(false)}
         onChange={item => {
-          setIndustry(item.value);
-          setIndustryName(item.label);
+          setResidence(item.value);
+          setResidenceName(item.label);
           setIsFocus(false);
         }}
       />
