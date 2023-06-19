@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, {useEffect} from 'react';
 import {
   ImageBackground,
   text,
@@ -9,18 +9,19 @@ import {
 } from 'react-native';
 // import Wallet from './wallet/Wallet';
 // import Bulletin from './bulletin/Bulletin';
-import { useDispatch } from 'react-redux';
-import { authSlice } from '../store/authSlice';
-import { useSelector } from 'react-redux';
+import {useDispatch} from 'react-redux';
+import {authSlice} from '../store/authSlice';
+import {useSelector} from 'react-redux';
+import Profile from './profile/Profile';
 
-function HomeScreen({ navigation }) {
+function HomeScreen({navigation}) {
   const atHome = useSelector(state => state.authSlice.atHome);
-  const dispatch = useDispatch()
-  const actions = authSlice.actions
+  const dispatch = useDispatch();
+  const actions = authSlice.actions;
   useEffect(() => {
     dispatch(actions.setAtHome(true));
   }, []);
-  
+
   return (
     <ImageBackground source={require('../assets/homeBg.png')} style={{flex: 1}}>
       <View style={styles.continer}>
@@ -37,11 +38,15 @@ function HomeScreen({ navigation }) {
 
         {/* this is bottom NavBar */}
         <TouchableOpacity
-        // onPress={() => {
-        //   navigation.navigate('Bulletin');
-        //   dispatch(actions.setAtHome(false));
-        // }}
-        >
+          // onPress={() => {
+          //   navigation.navigate('Bulletin');
+          //   dispatch(actions.setAtHome(false));
+          // }}
+          onPress={() => {
+            navigation.navigate('ProfileFirstScreen');
+            dispatch(actions.setAtHome(false));
+          }}
+          >
           <Image
             style={styles.logo}
             source={require('../assets/profileLogo.png')}
@@ -68,12 +73,22 @@ function HomeScreen({ navigation }) {
             source={require('../assets/locateLogo.png')}
           />
         </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => {
+            navigation.navigate('DiscountOfferScreen');
+            dispatch(actions.setAtHome(false));
+          }}>
+          <Image
+            style={styles.logo}
+            source={require('../assets/discountLogo.png')}
+          />
+        </TouchableOpacity>
       </View>
       <View
         style={{
           flexDirection: 'row',
           justifyContent: 'space-between',
-          bottom: '5%',
+          // bottom: '5%',
           paddingHorizontal: '5%',
         }}>
         <TouchableOpacity>
@@ -99,11 +114,11 @@ function HomeScreen({ navigation }) {
 const styles = StyleSheet.create({
   continer: {
     justifyContent: 'center',
-    flex: 1,
+    flex: 0.9,
     alignItems: 'center',
     gap: 12,
   },
-  logo: {width: 110, height: 110},
+  logo: {width: 90, height: 90},
   logoBottom: {width: 32, height: 32},
 });
 

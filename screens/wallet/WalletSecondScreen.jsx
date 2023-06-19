@@ -107,7 +107,7 @@ const WalletSecondScreen = ({navigation}) => {
     <ImageBackground
       source={require('../../assets/linearbg.png')}
       style={{flex: 1}}>
-      <View style={{gap: 2}}>
+      <View style={{gap: 2, }}>
         <View style={{paddingTop: 4, paddingLeft: 6}}>
           <Icons
             name="arrow-back"
@@ -139,7 +139,7 @@ const WalletSecondScreen = ({navigation}) => {
           </Text>
         </View>
         <SafeAreaView>
-          <ScrollView style={{width: '100%', height: '55%'}}>
+          <ScrollView style={{width: '100%', height: '100%'}}>
             <View>
               {redeem.map(item => {
                 return <RewardItem key={uuid.v4()} item={item} />;
