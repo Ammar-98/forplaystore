@@ -15,7 +15,7 @@ import CheckBox from '@react-native-community/checkbox';
 import { authSlice } from '../store/authSlice'
 import {useSelector, useDispatch} from 'react-redux';
 
-function CompleteProfileScreen() {
+function CompleteProfileScreen(props) {
   const dispatch = useDispatch();
   const actions = authSlice.actions;
 
@@ -24,7 +24,7 @@ function CompleteProfileScreen() {
 
   const handleSignup = () => {
     dispatch(actions.setAuth())
-    // navigation.navigate('HomeScreen');
+    // props.navigation.navigate('HomeStack');
   };
 
   return (

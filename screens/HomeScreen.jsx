@@ -91,7 +91,8 @@ function HomeScreen({navigation}) {
           // bottom: '5%',
           paddingHorizontal: '5%',
         }}>
-        <TouchableOpacity>
+        <TouchableOpacity
+        onPress={()=>navigation.navigate('SettingsScreen')}>
           <Image
             style={styles.logoBottom}
             source={require('../assets/settingLogo.png')}

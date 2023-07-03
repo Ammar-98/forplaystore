@@ -13,26 +13,108 @@ import EmailPass from '../components/EmailPass';
 import Logolg from '../components/Logolg';
 import ButtonGradient from '../components/ButtonGradient';
 import Button from '../components/Button';
-
+import axios from 'axios';
+import {useSelector, useDispatch} from 'react-redux';
+import {authSlice} from '../store/authSlice';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import {useEffect} from 'react';
+import AppContext from '../components/AppContext';
+import { useContext } from 'react';
 // import tw from 'nativewind'
 
-const LoginScreen = ({navigation}) => {
+const LoginScreen = props => {
+
+
+  const {userToken,setuserToken} = useContext(AppContext)
+
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
+  const [errorMessage, seterrorMessage] = useState('');
+
   console.log(password);
   console.log(email);
   console.log(rememberMe);
 
+  const dispatch = useDispatch();
+  const actions = authSlice.actions;
+
   const handleEmailChange = text => setEmail(text);
   const handlePasswordChange = text => setPassword(text);
   const handleRememberMeChange = () => setRememberMe(!rememberMe);
-  const handleLogin = () => {
-    navigation.navigate('CompleteProfileScreen')
+
+  const CheckToken = async () => {
+    try {
+      const SavedToken = await AsyncStorage.getItem('LoginToken');
+      console.log('SavedToken', SavedToken);
+      setuserToken(SavedToken)
+      if (SavedToken !== null) {
+        dispatch(actions.setAuth());
+      }
+    } catch (e) {}
   };
-    const handleRoute = () => {
-      navigation.navigate('SignupScreen');
-    };
+
+  const saveToken = async token => {
+    try {
+      console.log('token:', token);
+      await AsyncStorage.setItem('LoginToken', String(token));
+    } catch (e) {
+      console.log('e', e);
+    }
+  };
+
+  const validateEmail = email => {
+    const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    console.log('BOOL', emailRegex.test(email));
+    return emailRegex.test(email);
+  };
+
+  const handleLogin = async () => {
+    seterrorMessage('')
+    if (validateEmail(email)) {
+      if (password !== '') {
+        try {
+          const urlToHit = 'https://api.kachaak.com.sg/api/auth/user/login';
+          const config = {
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          };
+          const body = JSON.stringify({
+            email: email,
+            password: password,
+          });
+          const response = await axios.post(urlToHit, body, config);
+          console.log('response', response.data);
+          if (response.data !== undefined) {
+            saveToken(response.data.token);
+            setuserToken(response.data.token)
+            dispatch(actions.setAuth());
+          }
+        } catch (e) {
+          console.log('easass', e.response.data.error);
+          seterrorMessage(String(e.response.data.error));
+        }
+      } else {
+        console.log('emptyPassword');
+        seterrorMessage('Password cannot be empty');
+      }
+      
+    } else {
+      seterrorMessage('Invalid Email Format');
+
+      console.log('Invalid Email Format');
+    }
+  };
+  const handleRoute = () => {
+    props.navigation.navigate('SignupScreen');
+  };
+
+  useEffect(() => {
+    CheckToken()
+  }, [])
+
   return (
     <ImageBackground
       source={require('../assets/linearbg.png')}
@@ -43,6 +125,9 @@ const LoginScreen = ({navigation}) => {
           handleEmailChange={handleEmailChange}
           handlePasswordChange={handlePasswordChange}
         />
+        <Text style={{color: 'red', margin: 5, fontSize: 15}}>
+          {errorMessage}
+        </Text>
 
         <View
           style={{

@@ -13,13 +13,14 @@ import EmailPass from '../components/EmailPass';
 import Logolg from '../components/Logolg';
 import ButtonGradient from '../components/ButtonGradient';
 import Button from '../components/Button';
-
+import axios from 'axios';
 // import tw from 'nativewind'
 
-const SignupForm = ({navigation}) => {
+const SignupForm = props => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
+  const [errorMessage, seterrorMessage] = useState('')
   console.log(password);
   console.log(email);
   console.log(rememberMe);
@@ -27,12 +28,59 @@ const SignupForm = ({navigation}) => {
   const handleEmailChange = text => setEmail(text);
   const handlePasswordChange = text => setPassword(text);
   const handleRememberMeChange = () => setRememberMe(!rememberMe);
-  const handleSignup = () => {
-    navigation.navigate('CompleteProfileScreen');
+
+  const validateEmail = email => {
+    const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    return emailRegex.test(email);
+  };
+
+  const handleSignup = async () => {
+    seterrorMessage('')
+    if (validateEmail(email)) {
+      if (password !== '') {
+        try {
+          const urlToHit = 'https://api.kachaak.com.sg/api/auth/user/signup';
+
+          const config = {
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          };
+
+          const body = JSON.stringify({
+            email: '7ammarif888@gmail.com',
+            password: '123456',
+          });
+
+          // navigation.navigate('CompleteProfileScreen');s
+          console.log('email', email);
+          console.log('password', password);
+
+          const response = await axios.post(urlToHit, body, config);
+          // console.log('response', response.data.data);
+          const res = response.data.data;
+          console.log('res', res);
+
+          if (String(res) == 'sucess') {
+            props.navigation.navigate('LoginScreen');
+          }
+        } catch (e) {
+          console.log('e', e.response.data.error);
+          seterrorMessage(e.response.data.error)
+        }
+      } else {
+        console.log('Password cannot be empty');
+      seterrorMessage('Password cannot be empty')
+
+      }
+    } else {
+      seterrorMessage('Invalid Email Format')
+      console.log('Invalid Email Format');
+    }
   };
   const handleRoute = () => {
-    navigation.navigate('LoginScreen')
-  }
+    props.navigation.navigate('LoginScreen');
+  };
 
   return (
     <ImageBackground
@@ -44,18 +92,17 @@ const SignupForm = ({navigation}) => {
           handleEmailChange={handleEmailChange}
           handlePasswordChange={handlePasswordChange}
         />
+        <Text style={{color:'red',margin:5,fontSize:15}}>{errorMessage}</Text>
         <View
           style={{
             marginBottom: '6%',
             justifyContent: 'center',
-            alignItems: "center",
+            alignItems: 'center',
             flexDirection: 'row',
-            gap:4
+            gap: 4,
           }}>
-          <Text style={[styles.text]}>Do you have a account?</Text>
-          <TouchableOpacity style={{ marginTop: '8%' }}
-          onPress={handleRoute}
-          >
+          <Text style={[styles.text]}>Do you have an account?</Text>
+          <TouchableOpacity style={{marginTop: '8%'}} onPress={handleRoute}>
             <Text style={{color: '#00BBB4', fontSize: 18}}>Log in</Text>
           </TouchableOpacity>
         </View>
@@ -121,13 +168,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 5,
   },
-    bottomContainer: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        gap: 52,
-        marginTop:15
-  }
+  bottomContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: 52,
+    marginTop: 15,
+  },
 });
 
 export default SignupForm;

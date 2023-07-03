@@ -12,6 +12,7 @@ import {
 import React from 'react';
 import {useEffect, useState, useRef} from 'react';
 import {Dimensions} from 'react-native';
+import { Overlay } from 'react-native-elements';
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 export default function ProfileSecondScreen(props) {
@@ -19,21 +20,23 @@ export default function ProfileSecondScreen(props) {
 
   const [fullData, setfullData] = useState([]);
   const [selecteditem, setselecteditem] = useState('');
+  const [currentIndex, setcurrentIndex] = useState(0)
 
   const ScrollToIndex = () => {
     // console.log('selectedItem', selecteditem.id)
     if (selecteditem !== '') {
       ref.current.scrollToIndex({
         animated: true,
-        index: selecteditem.id - 1,
+        index: currentIndex,
       });
     }
   };
 
   useEffect(() => {
-    // console.log('props', props.route.params.data);
+    console.log('props', props.route.params.index);
     setfullData(props.route.params.fullList);
     setselecteditem(props.route.params.data);
+    setcurrentIndex(props.route.params.index)
   }, []);
 
   useEffect(() => {
@@ -50,9 +53,9 @@ export default function ProfileSecondScreen(props) {
       </View>
     );
   };
-  const FlatImageView = ({item}) => {
+  const FlatImageView = (props) => {
     const [modalVisible, setmodalVisible] = useState(false);
-    // console.log('item', item);
+    console.log('index', props.index);
     return (
       <View style={styles.FlatImageView}>
         <View
@@ -83,10 +86,11 @@ export default function ProfileSecondScreen(props) {
             width: '100%',
             height: windowHeight * 0.65,
             flexDirection: 'row',
+            
           }}>
           <Image
-            style={{width: '100%', height: '100%', resizeMode: 'stretch'}}
-            source={{uri: item.name}}
+            style={{width: '100%', height: '100%', resizeMode: 'contain'}}
+            source={{uri: props.item.media.url}}
           />
 
           {modalVisible == true ? <DropdownView /> : null}
@@ -111,7 +115,7 @@ export default function ProfileSecondScreen(props) {
                 height: windowHeight * 0.05,
                 width: windowHeight * 0.05,
                 marginRight: 5,
-                resizeMode: 'contain',
+                resizeMode: 'cover',
               }}
             />
           </View>
@@ -136,8 +140,8 @@ export default function ProfileSecondScreen(props) {
         ref={ref}
         contentContainerStyle={{paddingBottom: windowHeight * 0.2}}
         keyExtractor={item => String(item.id)}
-        renderItem={({item, index}) => {
-          return <FlatImageView item={item} />;
+        renderItem={({item,index}) => {
+          return <FlatImageView item={item} index={index} />;
         }}
         getItemLayout={(data, index) => ({
           length: windowHeight * 0.85,

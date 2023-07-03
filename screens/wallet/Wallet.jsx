@@ -5,8 +5,8 @@ import {createNativeStackNavigator} from '@react-navigation/native-stack';
 // import ButtonGradient from '../components/ButtonGradient'
 import WalletFirstScreen from './WalletFirstScreen';
 import WalletSecondScreen from './WalletSecondScreen';
+import RedeemHistory from './RedeemHistory';
 // import { chaakSlice } from '../../store/chaakSlice';
-
 const Stack = createNativeStackNavigator();
 console.log(Stack.Screen)
 
@@ -27,6 +27,10 @@ function Wallet() {
         <Stack.Screen
           name="WalletSecondScreen"
           component={WalletSecondScreen}
+        />
+        <Stack.Screen
+          name="RedeemHistory"
+          component={RedeemHistory}
         />
       </Stack.Navigator>
     </NavigationContainer>

@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import LinearGradient from 'react-native-linear-gradient';
 import {Text, TouchableOpacity, StyleSheet} from 'react-native';
 
-function ChaakReceived({ width, height }) {
-  const [receivedChaak,setReceivedChaak]= useState(0)
+function ChaakReceived({ width, height,receivedChaak }) {
+  // const [receivedChaak,setReceivedChaak]= useState(rcvdc)
   const [totalChaak, setTotalChaak] = useState(0);
   return (
     <TouchableOpacity style={{width: width, height: height}}>

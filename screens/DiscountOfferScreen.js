@@ -123,7 +123,7 @@ const styles = StyleSheet.create({
 
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginVertical: 10,
+    marginVertical: windowHeight*0.005,
   },
 
   Coloumn1: {
