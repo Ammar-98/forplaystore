@@ -11,7 +11,6 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import React from 'react';
-import Icons from 'react-native-vector-icons/MaterialIcons';
 import {useSelector} from 'react-redux';
 import Button from './walletComponents/Button';
 import uuid from 'react-native-uuid';
@@ -176,12 +175,12 @@ const WalletSecondScreen = ({navigation}) => {
           height: windowHeight * 0.05,
           justifyContent: 'center',
         }}>
-        <Icons
+        {/* <Icons
           name="arrow-back"
           color={'#00BBB4'}
           size={30}
           onPress={() => navigation.goBack()}
-        />
+        /> */}
       </View>
       <View style={styles.container}>
         <Text style={styles.topText}>Redeem</Text>

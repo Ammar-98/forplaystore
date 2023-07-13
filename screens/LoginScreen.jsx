@@ -7,6 +7,8 @@ import {
   Image,
   ImageBackground,
   TouchableOpacity,
+  ActivityIndicator,
+  Alert,
 } from 'react-native';
 import CheckBox from '@react-native-community/checkbox';
 import EmailPass from '../components/EmailPass';
@@ -19,20 +21,17 @@ import {authSlice} from '../store/authSlice';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useEffect} from 'react';
 import AppContext from '../components/AppContext';
-import { useContext } from 'react';
+import {useContext} from 'react';
 // import tw from 'nativewind'
 
 const LoginScreen = props => {
-
-
-  const {userToken,setuserToken} = useContext(AppContext)
-
+  const {userToken, setuserToken} = useContext(AppContext);
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
   const [errorMessage, seterrorMessage] = useState('');
-
+  const [loading, setloading] = useState(true);
   console.log(password);
   console.log(email);
   console.log(rememberMe);
@@ -48,11 +47,17 @@ const LoginScreen = props => {
     try {
       const SavedToken = await AsyncStorage.getItem('LoginToken');
       console.log('SavedToken', SavedToken);
-      setuserToken(SavedToken)
+      setuserToken(SavedToken);
       if (SavedToken !== null) {
+        setloading(false);
         dispatch(actions.setAuth());
+      } else {
+        setloading(false);
       }
-    } catch (e) {}
+    } catch (e) {
+      console.log('e', e.response);
+      setloading(false);
+    }
   };
 
   const saveToken = async token => {
@@ -71,10 +76,11 @@ const LoginScreen = props => {
   };
 
   const handleLogin = async () => {
-    seterrorMessage('')
+    seterrorMessage('');
     if (validateEmail(email)) {
       if (password !== '') {
         try {
+          setloading(true);
           const urlToHit = 'https://api.kachaak.com.sg/api/auth/user/login';
           const config = {
             headers: {
@@ -89,18 +95,22 @@ const LoginScreen = props => {
           console.log('response', response.data);
           if (response.data !== undefined) {
             saveToken(response.data.token);
-            setuserToken(response.data.token)
+            setuserToken(response.data.token);
+            setloading(false);
             dispatch(actions.setAuth());
+          } else {
+            setloading(false);
+            Alert.alert('Login error:100');
           }
         } catch (e) {
           console.log('easass', e.response.data.error);
+          setloading(false);
           seterrorMessage(String(e.response.data.error));
         }
       } else {
         console.log('emptyPassword');
         seterrorMessage('Password cannot be empty');
       }
-      
     } else {
       seterrorMessage('Invalid Email Format');
 
@@ -112,61 +122,75 @@ const LoginScreen = props => {
   };
 
   useEffect(() => {
-    CheckToken()
-  }, [])
+    CheckToken();
+  }, []);
 
-  return (
-    <ImageBackground
-      source={require('../assets/linearbg.png')}
-      style={{flex: 1}}>
-      <View classN style={styles.container}>
-        <Logolg width={165} height={133} />
-        <EmailPass
-          handleEmailChange={handleEmailChange}
-          handlePasswordChange={handlePasswordChange}
-        />
-        <Text style={{color: 'red', margin: 5, fontSize: 15}}>
-          {errorMessage}
-        </Text>
-
-        <View
-          style={{
-            marginBottom: '6%',
-            justifyContent: 'center',
-            alignItems: 'center',
-            flexDirection: 'row',
-            gap: 4,
-          }}>
-          <Text style={[styles.text]}>Do you have a account?</Text>
-          <TouchableOpacity style={{marginTop: '8%'}} onPress={handleRoute}>
-            <Text style={{color: '#00BBB4', fontSize: 18}}>Signup</Text>
-          </TouchableOpacity>
-        </View>
-        {/* <View style={styles.buttonContainer}> */}
-        {/* <ButtonGradient width={'70%'} height={'20%'} /> */}
-
-        <Button
-          width={'40%'}
-          height={'7%'}
-          title={'Login'}
-          handleSignup={handleLogin}
-        />
-        {/* </View> */}
-
-        <View style={styles.bottomContainer}>
-          <View style={styles.checkboxWrapper}>
-            <CheckBox
-              tintColors="#FFFFFF"
-              value={rememberMe}
-              onValueChange={value => setRememberMe(value)}
-            />
-            <Text style={[styles.text, {marginTop: -2}]}>Remember me</Text>
-          </View>
-          <Text style={{fontSize: 16, color: 'white'}}>Forgot Password?</Text>
-        </View>
+  if (loading == true) {
+    return (
+      <View
+        style={{
+          flex: 1,
+          justifyContent: 'center',
+          alignItems: 'center',
+          backgroundColor: '#343643',
+        }}>
+        <ActivityIndicator size={200} color={'525461'} />
       </View>
-    </ImageBackground>
-  );
+    );
+  } else {
+    return (
+      <ImageBackground
+        source={require('../assets/linearbg.png')}
+        style={{flex: 1}}>
+        <View classN style={styles.container}>
+          <Logolg width={165} height={133} />
+          <EmailPass
+            handleEmailChange={handleEmailChange}
+            handlePasswordChange={handlePasswordChange}
+          />
+          <Text style={{color: 'red', margin: 5, fontSize: 15}}>
+            {errorMessage}
+          </Text>
+
+          <View
+            style={{
+              marginBottom: '6%',
+              justifyContent: 'center',
+              alignItems: 'center',
+              flexDirection: 'row',
+              gap: 4,
+            }}>
+            <Text style={[styles.text]}>Do you have a account?</Text>
+            <TouchableOpacity style={{marginTop: '8%'}} onPress={handleRoute}>
+              <Text style={{color: '#00BBB4', fontSize: 18}}>Signup</Text>
+            </TouchableOpacity>
+          </View>
+          {/* <View style={styles.buttonContainer}> */}
+          {/* <ButtonGradient width={'70%'} height={'20%'} /> */}
+
+          <Button
+            width={'40%'}
+            height={'7%'}
+            title={'Login'}
+            handleSignup={handleLogin}
+          />
+          {/* </View> */}
+
+          <View style={styles.bottomContainer}>
+            <View style={styles.checkboxWrapper}>
+              <CheckBox
+                tintColors="#FFFFFF"
+                value={rememberMe}
+                onValueChange={value => setRememberMe(value)}
+              />
+              <Text style={[styles.text, {marginTop: -2}]}>Remember me</Text>
+            </View>
+            <Text style={{fontSize: 16, color: 'white'}}>Forgot Password?</Text>
+          </View>
+        </View>
+      </ImageBackground>
+    );
+  }
 };
 
 const styles = StyleSheet.create({

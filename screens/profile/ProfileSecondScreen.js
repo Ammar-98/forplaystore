@@ -22,26 +22,30 @@ export default function ProfileSecondScreen(props) {
   const [selecteditem, setselecteditem] = useState('');
   const [currentIndex, setcurrentIndex] = useState(0)
 
-  const ScrollToIndex = () => {
-    // console.log('selectedItem', selecteditem.id)
+  const ScrollToIndex = (ci) => {
+    console.log('selectedItem', ci)
     if (selecteditem !== '') {
       ref.current.scrollToIndex({
         animated: true,
-        index: currentIndex,
+        index: ci,
       });
     }
   };
 
-  useEffect(() => {
-    console.log('props', props.route.params.index);
-    setfullData(props.route.params.fullList);
-    setselecteditem(props.route.params.data);
-    setcurrentIndex(props.route.params.index)
-  }, []);
+  // useEffect(() => {
+  //   console.log('props', props.route.params.index);
+  //   setfullData(props.route.params.fullList);
+  //   setselecteditem(props.route.params.data);
+  //   setcurrentIndex(props.route.params.index)
+  // }, []);
 
   useEffect(() => {
-    ScrollToIndex();
-    // console.log('here',selecteditem)
+    setfullData(props.route.params.fullList);
+    setselecteditem(props.route.params.data);
+    setcurrentIndex(props.route.params.index);
+    setTimeout(() => {
+      ScrollToIndex(props.route.params.index);
+    }, 100); // Adjust the delay as needed
   }, [selecteditem]);
 
   const DropdownView = () => {
@@ -55,7 +59,7 @@ export default function ProfileSecondScreen(props) {
   };
   const FlatImageView = (props) => {
     const [modalVisible, setmodalVisible] = useState(false);
-    console.log('index', props.index);
+    // console.log('index', props.index);
     return (
       <View style={styles.FlatImageView}>
         <View

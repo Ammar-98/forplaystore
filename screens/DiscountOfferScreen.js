@@ -1,6 +1,12 @@
-import {StyleSheet, Text, View} from 'react-native';
+import {StyleSheet, Text, View,FlatList} from 'react-native';
 import React from 'react';
 import {Dimensions} from 'react-native';
+import { useState,useEffect } from 'react';
+import { useContext } from 'react';
+import AppContext from '../components/AppContext';
+import axios from 'axios';
+
+
 const windowHeight = Dimensions.get('window').height;
 const windowWidth = Dimensions.get('window').width;
 const HeaderView = () => {
@@ -89,13 +95,77 @@ const DiscountCardView = () => {
   );
 };
 
+
+
+
+
+
+
+
 export default function DiscountOfferScreen() {
+
+const {userToken}=useContext(AppContext)
+  const [data, setData] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [hasNextPage, setHasNextPage] = useState(false);
+  const [loading, setloading] = useState(true);
+
+const getDiscountOffer=async()=>{
+  try{
+    setloading(true);
+    const token = userToken;
+    const urlToHit = 'https://api.kachaak.com.sg/api/strategies/discountOffers';
+    const config = {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    };
+    const response = await axios.get(urlToHit, config);
+    console.log('response', response.data)
+    const responseData = response.data;
+    const newData = responseData.data;
+    setData(prevData => [...prevData, ...newData]);
+    setHasNextPage(responseData.pagination?.hasNextPage);
+    setloading(false);
+
+
+  }catch(error){
+    console.log('error', error)
+  }
+}
+
+
+
+const handleEndReached = () => {
+  if (hasNextPage) {
+    const nextPage = currentPage + 1;
+    setCurrentPage(nextPage);
+    getJobs(nextPage);
+  }
+};
+
+
+
+useEffect(() => {
+  getDiscountOffer()
+
+}, [])
+
+
+
   return (
     <View style={{alignItems: 'center', backgroundColor: '#00BBB4', flex: 1}}>
       <HeaderView />
-      <DiscountCardView />
-      <DiscountCardView />
-      <DiscountCardView />
+      <FlatList
+            data={data}
+            keyExtractor={(item, index) => index}
+            contentContainerStyle={{paddingBottom: windowHeight * 0.2}}
+            renderItem={({item}) => {
+              return <DiscountCardView item={item} />;
+            }}
+            onEndReached={handleEndReached}
+            onEndReachedThreshold={0.7}
+          />
     </View>
   );
 }

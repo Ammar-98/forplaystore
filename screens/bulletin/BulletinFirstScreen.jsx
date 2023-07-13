@@ -10,7 +10,6 @@ import {
   Alert,
 } from 'react-native';
 import React from 'react';
-import Icons from 'react-native-vector-icons/MaterialIcons';
 import {useSelector} from 'react-redux';
 // import ButtonGradient from '../../';
 import Button from './bulletinComponents/Button';

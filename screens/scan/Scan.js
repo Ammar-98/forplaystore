@@ -173,9 +173,9 @@ export default function Scan(props) {
     })();
   }, []);
 
-  const decodeToken = token => {
+  const decodeToken = async token => {
     try {
-      const decodedToken = jwtDecode(token);
+      const decodedToken = await jwtDecode(token);
       return decodedToken;
     } catch (error) {
       console.log('Error decoding token:', error);
@@ -185,6 +185,7 @@ export default function Scan(props) {
 
   const sendQRcodeData = async (userID, QRobj) => {
     try {
+      console.log('userID', userID)
       const urlToHit = 'https://api.kachaak.com.sg/api/scanner/sessionData';
       const token = userToken;
       const config = {
@@ -202,16 +203,16 @@ export default function Scan(props) {
       const response = await axios.post(urlToHit, body, config);
       console.log('response', response.data);
       setloading(false);
-      Alert.alert('Successful')
-      props.navigation.goBack();
+      Alert.alert('Successful');
+      props.navigation.navigate('ProfileFirstScreen');
 
       // setcheckingQR(false)
       // console.log('response.message', response.message)
     } catch (e) {
-      console.log('e', e.response);
+      console.log('e1111', e.response.data);
       setloading(false);
       Alert.alert('error loading data');
-      props.navigation.goBack();
+      props.navigation.navigate('ProfileFirstScreen');
     }
   };
 
@@ -224,10 +225,11 @@ export default function Scan(props) {
     return modifiedString;
   };
 
-  const getuserID = QRString => {
-    const decode = decodeToken(userToken);
-    // console.log('decode', decode.id,QRString)
-    var QRobj = addColonToString(QRString);
+  const getuserID = async QRString => {
+    console.log('userToken', userToken)
+    const decode = await decodeToken(userToken);
+    console.log('decode', decode)
+    var QRobj = await addColonToString(QRString);
     QRobj = JSON.parse(QRobj);
     console.log('QRobj', QRobj);
     const userID = decode.id;
@@ -237,12 +239,26 @@ export default function Scan(props) {
   };
 
   useEffect(() => {
-    console.log(barcodes[0]?.displayValue);
-    if (barcodes[0]?.displayValue != undefined) {
+    // console.log(barcodes[0]?.displayValue);
+    if (barcodes[0]?.displayValue != undefined && String(barcodes[0].displayValue).includes("franchiseID")) {
       setcheckingQR(true);
       setloading(true);
       //Show modal
-      getuserID(barcodes[0].displayValue);
+      console.log(barcodes[0]?.displayValue);
+
+      getuserID(barcodes[0]?.displayValue);
+      console.log('trueFranchiseID')
+    }
+    else if(barcodes[0]?.displayValue != undefined && String(barcodes[0].displayValue).includes("STRATEGY"))
+    {
+      // handleScanReceipthere
+      console.log(barcodes[0]?.displayValue);
+      console.log('strategy')
+
+    }
+    else{
+      console.log(barcodes[0]?.displayValue);
+
     }
   }, [barcodes]);
 
@@ -259,8 +275,9 @@ export default function Scan(props) {
           frameProcessorFps={isFocused && !checkingQR ? 2 : 0}
         />
         {loading ? (
-          <View style={{flex: 1,justifyContent:'center',alignItems:'center'}}>
-            <ActivityIndicator size={200} color={'525461'}  />
+          <View
+            style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+            <ActivityIndicator size={200} color={'525461'} />
           </View>
         ) : (
           <RNHoleView

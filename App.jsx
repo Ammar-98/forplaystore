@@ -10,10 +10,16 @@
 // import MenuScreen from './screens/MenuScreen';
 // import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
-import { Provider } from 'react-redux';
+import {Provider} from 'react-redux';
+import jwtDecode from 'jwt-decode';
+import { Alert } from 'react-native';
 import store from './store';
-import AppNavigation from "./navigations/index"
-
+import AppNavigation from './navigations/index';
+import {useEffect} from 'react';
+import { Permission } from 'react-native';
+import { PermissionsAndroid } from 'react-native';
+import axios from 'axios';
+import messaging from '@react-native-firebase/messaging';
 import {
   SafeAreaView,
   ScrollView,
@@ -26,14 +32,69 @@ import {
 } from 'react-native';
 
 
-// const Stack = createNativeStackNavigator();
 
+// const Stack = createNativeStackNavigator();
+// const sendFmcTokenApi=async(token)=>{
+//   try {
+//     const urlToHit = 'https://api.kachaak.com.sg/api/users/fcmtoken';
+//     const config = {
+//       headers: {
+//         'Content-Type': 'application/json',
+//       },
+//     };
+//     const body = JSON.stringify({
+//       userId: email,
+//       fcmToken: token,
+//     });
+//     const response = await axios.post(urlToHit, body, config);
+//     console.log('response', response.data);
+//     if (response.data !== undefined) {
+//       saveToken(response.data.token);
+//       setuserToken(response.data.token)
+//       dispatch(actions.setAuth());
+//     }
+//   } catch (e) {
+//     console.log('easass', e.response.data.error);
+//     seterrorMessage(String(e.response.data.error));
+//   }
+// }
 function App() {
+  // const sendFmcToken = async () => {
+  //   try {
+  //     console.log('her')
+  //     // await messaging().registerDeviceForRemoteMessages();
+  //     const token = await messaging().getToken();
+  //     console.log('token', token);
+
+  //     // await axios.post('http://192.168.28.232:3000/register', {token});
+  //     sendFmcTokenApi(token)
+  //   } catch (err) {
+  //     //Do nothing
+  //     console.log(err.response.data);
+  //     return;
+  //   }
+  // };
+  useEffect(() => {
+    const unsubscribe = messaging().onMessage(async remoteMessage => {
+      Alert.alert('A new FCM message arrived in foreground!', JSON.stringify(remoteMessage));
+    });
+
+    return unsubscribe;
+  }, []);
+  
+
+  
+  
+
+
+  // useEffect(() => {
+  //   sendFmcToken();  theapi
+  // }, []);
 
   return (
     <Provider store={store}>
-      <AppNavigation/>
-  </Provider>
+      <AppNavigation />
+    </Provider>
 
     // <Provider store={store}>
     // <NavigationContainer>
@@ -55,7 +116,7 @@ function App() {
 
     //     {/* <Stack.Screen name="MenuScreen" component={MenuScreen} /> */}
     //   </Stack.Navigator>
-    
+
     // </NavigationContainer>
     // </Provider>
   );

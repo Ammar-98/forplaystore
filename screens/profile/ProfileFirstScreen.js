@@ -19,114 +19,46 @@ import {useContext} from 'react';
 import AppContext from '../../components/AppContext';
 import jwtDecode from 'jwt-decode';
 import axios from 'axios';
-import { launchImageLibrary } from 'react-native-image-picker';
+import {launchImageLibrary} from 'react-native-image-picker';
 export default function ProfileFirstScreen(props) {
   const [Imgdata, setImgdata] = useState([]);
   const [loading, setloading] = useState(true);
-  const data = [
-    {
-      id: 1,
-      name: 'https://picsum.photos/id/237/200/300',
-    },
-    {
-      id: 2,
-      name: 'https://picsum.photos/id/238/200/300',
-    },
-    {
-      id: 3,
-      name: 'https://picsum.photos/id/239/200/300',
-    },
-    {
-      id: 4,
-      name: 'https://picsum.photos/id/240/200/300',
-    },
-    {
-      id: 5,
-      name: 'https://picsum.photos/id/241/200/300',
-    },
-    {
-      id: 6,
-      name: 'https://picsum.photos/id/242/200/300',
-    },
-    {
-      id: 7,
-      name: 'https://picsum.photos/id/243/200/300',
-    },
-    {
-      id: 8,
-      name: 'https://picsum.photos/id/244/200/300',
-    },
-    {
-      id: 9,
-      name: 'https://picsum.photos/id/252/200/300',
-    },
-    {
-      id: 10,
-      name: 'https://picsum.photos/id/243/200/300',
-    },
-    {
-      id: 11,
-      name: 'https://picsum.photos/id/247/200/300',
-    },
-    {
-      id: 12,
-      name: 'https://picsum.photos/id/248/200/300',
-    },
-    {
-      id: 13,
-      name: 'https://picsum.photos/id/249/200/300',
-    },
-    {
-      id: 14,
-      name: 'https://picsum.photos/id/250/200/300',
-    },
-    {
-      id: 15,
-      name: 'https://picsum.photos/id/251/200/300',
-    },
-    {
-      id: 16,
-      name: 'https://picsum.photos/id/252/200/300',
-    },
-    {
-      id: 17,
-      name: 'https://picsum.photos/id/253/200/300',
-    },
-    {
-      id: 18,
-      name: 'https://picsum.photos/id/254/200/300',
-    },
-    {
-      id: 19,
-      name: 'https://picsum.photos/id/255/200/300',
-    },
-    {
-      id: 20,
-      name: 'https://picsum.photos/id/256/200/300',
-    },
-  ];
 
-
-  const GetProfilePic=async()=>{
-    try{
-      const pic= await launchImageLibrary(mediaType='photo')
-      console.log('pic', pic)
+  const GetProfilePic = async () => {
+    try {
+      const pic = await launchImageLibrary((mediaType = 'photo'));
+      console.log('pic', pic);
+    } catch (e) {
+      console.log('e', e);
     }
-    catch(e){
-      console.log('e', e)
-    }
-  }
+  };
 
+  const emptyList = () => {
+    return (
+      <View
+        style={{
+          height: windowHeight * 0.6,
+          width: windowWidth,
+          alignItems: 'center',
+          justifyContent: 'center',
+          // backgroundColor: 'red',
+        }}>
+        {/* <Text style={{fontSize: 15, color: 'gray'}}>No pictures uploaded yet</Text> */}
+        <Text style={{fontSize: 12, color: 'gray'}}>Scan QR code to add pictures.</Text>
 
-  const FlatListImageView = (prop) => {
-    console.log('item',prop.index);
+      </View>
+    );
+  };
+
+  const FlatListImageView = prop => {
+    console.log('item', prop.index);
     return (
       <TouchableOpacity
         onPress={() =>
           props.navigation.navigate('ProfileSecondScreen', {
             data: prop.item,
             fullList: Imgdata,
-            index: Number(prop.index)
+            index: Number(prop.index),
           })
         }>
         <View style={styles.flatListImageCont}>
@@ -168,7 +100,7 @@ export default function ProfileFirstScreen(props) {
       console.log('responseData', responseData.data.length);
       if (response?.data != undefined) {
         setImgdata(responseData.data);
-        console.log('imagedata', Imgdata[0])
+        console.log('imagedata', Imgdata[0]);
       } else {
         Alert.alert('error loading profile');
         props.navigation.goBack();
@@ -224,13 +156,13 @@ export default function ProfileFirstScreen(props) {
                 alignItems: 'center',
                 justifyContent: 'center',
               }}>
-                <TouchableOpacity onPress={GetProfilePic}>
-              <Image
-                source={{
-                  uri: 'https://preview.keenthemes.com/metronic-v4/theme/assets/pages/media/profile/people19.png',
-                }}
-                style={styles.profilePicContainer}
-              />
+              <TouchableOpacity onPress={GetProfilePic}>
+                <Image
+                  source={{
+                    uri: 'https://preview.keenthemes.com/metronic-v4/theme/assets/pages/media/profile/people19.png',
+                  }}
+                  style={styles.profilePicContainer}
+                />
               </TouchableOpacity>
             </View>
             <View
@@ -257,6 +189,7 @@ export default function ProfileFirstScreen(props) {
           <FlatList
             data={Imgdata}
             numColumns={3}
+            ListEmptyComponent={emptyList}
             contentContainerStyle={{paddingBottom: windowHeight * 0.01}}
             keyExtractor={(item, index) => item.id}
             renderItem={({item, index}) => {
@@ -277,11 +210,13 @@ const styles = StyleSheet.create({
     // backgroundColor: 'red',
   },
   profileFlatlistContainer: {
+    borderTopColor:'gray',
+    borderTopWidth:0.2,
     height: windowHeight * 0.65,
     width: windowWidth,
     // backgroundColor: 'green',
     justifyContent: 'center',
-    alignItems: 'center',
+    // alignItems: 'center',
   },
   flatListImageCont: {
     height: windowHeight * 0.1625,
