@@ -7,9 +7,10 @@ import Screen3 from '../screens/Screen3';
 import SignupScreen from '../screens/SignupScreen';
 import LoginScreen from '../screens/LoginScreen';
 import CompleteProfileScreen from '../screens/CompleteProfileScreen';
+import ForgotPassword from '../screens/ForgotPassword';
 import HomeScreen from '../screens/HomeScreen';  //this shold be in bottom navigation bar
 // import MenuScreen from '../screens/MenuScreen';
-
+import EditProfile from '../screens/EditProfile';
 
 function AuthNavigation() {
     const AuthStack = createNativeStackNavigator();
@@ -29,6 +30,9 @@ function AuthNavigation() {
           name="CompleteProfileScreen"
           component={CompleteProfileScreen}
         />
+        <AuthStack.Screen name="ForgotPassword" component={ForgotPassword} />
+        <AuthStack.Screen name="EditProfile" component={EditProfile} />
+
         {/* <Stack.Screen name="HomeScreen" component={HomeScreen} /> */}
 
         {/* <Stack.Screen name="MenuScreen" component={MenuScreen} /> */}

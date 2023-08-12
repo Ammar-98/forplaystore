@@ -13,7 +13,11 @@ import {Image} from 'react-native-elements';
 import {useEffect} from 'react';
 import {authSlice} from '../store/authSlice';
 import {useSelector} from 'react-redux';
+import { ScrollView } from 'react-native';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import * as size from '../components/FontSize';
 
+import AsyncStorage from '@react-native-async-storage/async-storage';
 const windowHeight = Dimensions.get('window').height;
 const windowWidth = Dimensions.get('window').width;
 
@@ -22,27 +26,37 @@ export default function SettingsScreen(props) {
   const dispatch = useDispatch();
   const actions = authSlice.actions;
 
+  const saveToken = async token => {
+    try {
+      console.log('token:', token);
+      await AsyncStorage.setItem('LoginToken', String(token));
+    } catch (e) {
+      console.log('e', e);
+    }
+  };
+
+
+  const logOut=async()=>{
+    try {
+     await saveToken('')
+      dispatch(actions.setAuth(false));
+    } catch (error) {
+      
+    }
+  }
+
+
+
   const ButtonView = item => {
-    console.log('item', item.name, item.route, item.bool);
+    // console.log('item', item.name, item.route, item.bool);
 
     if (item.bool == true) {
       return (
-        <TouchableOpacity onPress={() => props.navigation.navigate(item.route)}>
-          <View style={styles.buttonView}>
-            <LinearGradient
-              colors={[
-                '#595B68',
-                '#454754',
-                '#272936',
-                '#1B1D2A',
-                '#000000',
-                '#000000',
-              ]}
-              start={{x: 0, y: 0}}
-              end={{x: 1, y: 0}}
-              style={styles.buttonView}>
+        <TouchableOpacity onPress={() => logOut()}>
+          <View style={{...styles.buttonView, backgroundColor: '#00BBB4'}}>
+           
               <Text style={styles.buttonText}>{item.name}</Text>
-            </LinearGradient>
+          
           </View>
         </TouchableOpacity>
       );
@@ -58,7 +72,7 @@ export default function SettingsScreen(props) {
   };
 
   useEffect(() => {
-    dispatch(actions.setAtHome(false));
+    // dispatch(actions.setAtHome(false));
   }, []);
 
   return (
@@ -72,32 +86,31 @@ export default function SettingsScreen(props) {
         '#1B1D2A',
       ]}
       style={{flex: 1}}>
+        <ScrollView>
       <View style={styles.FullView}>
         <View style={styles.logoContainer}>
-          <Image
-            source={require('../assets/settings.png')}
-            resizeMode="contain"
-            style={{
-              // backgroundColor: 'red',
-              height: windowHeight * 0.2,
-              width: windowWidth * 0.23,
-            }}
-          />
+        <MaterialIcons
+                name={ 'settings'}
+                size={70}
+                color="white"
+              />
           <View
             style={{
-              height: windowHeight * 0.1,
-              // backgroundColor: 'red',
+              // height: windowHeight * 0.1,
+              // backgroundColor: 'blue',
               width: windowWidth,
               alignItems: 'center',
               // justifyContent:'center'
             }}>
-            <Text style={{color: 'white', fontSize: 30, fontWeight: 'bold'}}>
+            <Text style={{color: 'white', fontSize: size.large(), fontWeight: 'bold',textShadowColor: 'black',
+            textShadowOffset: {width: 0, height: 1},
+            textShadowRadius: 10,}}>
               Settings
             </Text>
           </View>
         </View>
         <View style={styles.optionsContainer}>
-          <ButtonView name={'Edit Profile'} route={'EditProfile'} bool={true} />
+          <ButtonView name={'Edit Profile'} route={'EditProfile'} bool={false} />
           <ButtonView
             name={'Change Password'}
             route={'ChangePassword'}
@@ -106,8 +119,11 @@ export default function SettingsScreen(props) {
           <ButtonView name={'FAQ'} route={'FAQ'} bool={false} />
           <ButtonView name={'T&A'} route={'TandA'} bool={false} />
           <ButtonView name={'Contact Us'} route={'ContactUs'} bool={false} />
+          <ButtonView name={'Log Out'} route={''} bool={true} />
+
         </View>
       </View>
+      </ScrollView>
     </LinearGradient>
   );
 }
@@ -121,26 +137,29 @@ const styles = StyleSheet.create({
   },
   logoContainer: {
     width: windowWidth,
-    height: windowHeight * 0.3,
+    height: windowHeight * 0.2,
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'flex-end',
     // backgroundColor: 'red',
   },
   optionsContainer: {
     width: windowWidth,
-    height: windowHeight * 0.6,
+    height: windowHeight * 0.7,
     // backgroundColor: 'orange',
     alignItems: 'center',
+    justifyContent:'space-evenly'
   },
   buttonView: {
     width: windowWidth * 0.6,
-    height: windowHeight * 0.08,
+    height: windowHeight * 0.07,
     alignItems: 'center',
     justifyContent: 'center',
     // backgroundColor:'green',
     borderRadius: 7,
-    marginVertical: 10,
+    // marginVertical: 10,
     // flexDirection:'row'
   },
-  buttonText: {color: 'white', fontSize: 20},
+  buttonText: {color: 'white', fontSize: size.medium(),textShadowColor: 'gray',
+  textShadowOffset: {width: 0, height: 0},
+  textShadowRadius: 5,},
 });

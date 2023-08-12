@@ -10,18 +10,26 @@ import {
   Alert,
   ActivityIndicator,
 } from 'react-native';
+import { PixelRatio } from 'react-native';
 import React from 'react';
+import moment from 'moment';
+import FontAwesome from 'react-native-vector-icons/FontAwesome';
+import { RefreshControl } from 'react-native';
 import {useSelector} from 'react-redux';
 import Button from './walletComponents/Button';
 import uuid from 'react-native-uuid';
+import {axiosGet} from '../../axios/axios';
 import AppContext from '../../components/AppContext';
 import {useContext} from 'react';
 import {Dimensions} from 'react-native';
 import {useEffect, useState} from 'react';
 import axios from 'axios';
+import { useToast } from 'react-native-toast-notifications';
+import { errortoast,messagetoast } from '../../Toast';
+import * as size from '../../components/FontSize';
 const windowHeight = Dimensions.get('window').height;
 const WindowWidth = Dimensions.get('window').width;
-
+const fs=Dimensions.get('window')
 const WalletSecondScreen = ({navigation}) => {
   const {totalChaakPoints, settotalChaakPoints, userToken} =
     useContext(AppContext);
@@ -30,7 +38,16 @@ const WalletSecondScreen = ({navigation}) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [hasNextPage, setHasNextPage] = useState(false);
   const [loading, setloading] = useState(true);
-  const [redeemHistory, setredeemHistory] = useState([])
+  const [redeemHistory, setredeemHistory] = useState([]);
+
+  const  toast= useToast()
+  const showMessage = message => {
+    toast.show(message, messagetoast(message));
+  };
+  const showError = message => {
+    toast.show(message, errortoast(message));
+  };
+
 
   const getOffers = async page => {
     try {
@@ -38,16 +55,47 @@ const WalletSecondScreen = ({navigation}) => {
       console.log('called get Offer');
       const token = userToken;
       const urlToHit = 'https://api.kachaak.com.sg/api/offers';
-      const config = {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      };
-      const response = await axios.get(urlToHit, config);
+
+      const response = await axiosGet(urlToHit);
       const responseData = response.data;
       const newData = responseData.data;
       console.log('newData', newData);
-      setData(prevData => [...prevData, ...newData]);
+      const filteredData = newData.filter(item => !item.hasRedeemedOffer==true);
+      setData(prevData => [...prevData, ...filteredData]);
+      setHasNextPage(responseData.pagination.hasNextPage);
+      setloading(false);
+    } catch (e) {
+      console.log('e', e);
+    }
+  };
+  const lisFooterView = () => {
+    return loading == true ? (
+      <View
+        style={{
+          alignItems: 'center',
+          // backgroundColor: '#00BBB4',
+          marginTop:10,
+          width: WindowWidth,
+        }}>
+        <ActivityIndicator size={30} color={'#00BBB4'} />
+      </View>
+    ) : null;
+  };
+  const getOffers2 = async page => {
+    try {
+      setCurrentPage(1)
+      setloading(true);
+      console.log('called get Offer');
+      const token = userToken;
+      const urlToHit = 'https://api.kachaak.com.sg/api/offers';
+
+      const response = await axiosGet(urlToHit);
+      const responseData = response.data;
+      const newData = responseData.data;
+      console.log('newData', newData);
+      const filteredData = newData.filter(item => !item.hasRedeemedOffer==true);
+
+      setData(filteredData);
       setHasNextPage(responseData.pagination.hasNextPage);
       setloading(false);
     } catch (e) {
@@ -57,7 +105,7 @@ const WalletSecondScreen = ({navigation}) => {
   const toggleRedeem = async (redeem, setredeem, id) => {
     // Alert.alert('as',id)
     // if (redeem == 'Redeem') {
-   
+
     try {
       console.log('called redeem offer');
       console.log('id', id);
@@ -66,26 +114,23 @@ const WalletSecondScreen = ({navigation}) => {
       console.log('token', token);
       const urlToHit =
         'https://api.kachaak.com.sg/api/offers/' + id + '/redeem';
-      const config = {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      };
 
-      const response = await axios.get(urlToHit, config);
+      const response = await axiosGet(urlToHit);
       console.log('response::', response);
-      if(response?.data!==undefined)
-      {setredeem(true);}
-      // 
+      if (response?.data !== undefined) {
+        setredeem(true);
+      }
+      //
     } catch (e) {
-      Alert.alert(e.response.data.error);
+     showError(e.response.data.error);
       console.log('e', e.response.data.error);
     }
   };
   useEffect(() => {
     // fetchData(currentPage);
     getOffers(currentPage);
-    console.log('userToken', userToken);
+    // console.log('userToken', userToken);
+    // console.log('fs',size.small())
   }, []);
 
   const handleEndReached = () => {
@@ -98,65 +143,110 @@ const WalletSecondScreen = ({navigation}) => {
 
   const totalChaak = totalChaakPoints;
 
-
   const RewardItem = ({item}) => {
     console.log('item:::', item);
-    const [redeem, setredeem] = useState(item?.isApplied==true?true:false);
+    const [redeem, setredeem] = useState(
+      item?.hasRedeemedOffer == true ? true : false,
+    );
     return (
       <View
         style={{
-          height: windowHeight * 0.05,
+          minHeight: windowHeight * 0.08,
           justifyContent: 'center',
           borderTopWidth: 1,
           borderTopColor: 'white',
+          borderBottomWidth: 1,
+          borderBottomColor: 'white',
         }}>
         <View
           style={{
             flexDirection: 'row',
-            justifyContent: 'space-between',
+            // justifyContent: 'space-between',
             width: WindowWidth,
+
+          // backgroundColor:'green',
           }}>
-          <View style={{width: WindowWidth * 0.6}}>
+          <View
+            style={{width: WindowWidth * 0.74, justifyContent: 'space-evenly',}}>
             <Text
               style={{
                 fontWeight: 'bold',
-                fontSize: 12,
+                fontSize: size.small(),
                 color: 'white',
-                marginHorizontal: 2,
+                marginLeft: 5,
+                textShadowColor: 'black',
+                  textShadowOffset: {width: 0, height: 1},
+                  textShadowRadius: 10,
+                // marginHorizontal: 2,
               }}>
               {item.offerTitle}
             </Text>
             <View
               style={{
                 flexDirection: 'row',
-                // justifyContent: 'space-between',
-                // width: '80%',
                 // backgroundColor:'red',
-                marginHorizontal: 2,
+                // justifyContent: 'space-between',
+                width: '100%',
+                // backgroundColor:'red',
+                // marginHorizontal: 2,
                 justifyContent: 'space-between',
               }}>
-              <Text style={{fontSize: 10, color: 'white'}}>
-                Validity: {item.expiryDate}
+              
+              <Text
+             
+                style={{
+                  fontSize: size.Xsmall(),
+                  color: 'white',
+                  marginLeft: 5,
+                  textShadowColor: 'black',
+                  textShadowOffset: {width: 0, height: 1},
+                  textShadowRadius: 10,
+                }}>
+                Validity:{' '}
+                {moment(item.expiryDate).format('MMMM Do YYYY, h:mm a')}
               </Text>
-              <Text style={{fontSize: 10, color: '#00BBB4'}}>
+             
+              <Text style={{fontSize: size.Xsmall(), color: '#00BBB4',textShadowColor: 'black',
+                  textShadowOffset: {width: 0, height: 1},
+                  textShadowRadius: 10,}}>
                 Points: {item.points}
               </Text>
             </View>
           </View>
-         
+
           <View
             style={{
-              width: WindowWidth * 0.35,
-              height: '100%',
+              width: WindowWidth * 0.24,
+              // height: '100%',
+              // paddingHorizontal: 5,
+              // paddingVertical: 5,
               justifyContent: 'center',
               alignItems: 'center',
-              backgroundColor: redeem==true? '#525461': '#00BBB4'  ,
+              backgroundColor:
+                redeem == true || item.hasRedeemedOffer == true
+                  ? '#525461'
+                  : '#00BBB4',
+              // backgroundColor:'orange',
               borderRadius: 5,
-              marginHorizontal: WindowWidth * 0.01,
+              // marginRight:3
+              marginLeft: WindowWidth * 0.01,
             }}>
             <TouchableOpacity
-              onPress={() => redeem==true?null: toggleRedeem(redeem, setredeem, item.id)}>
-              <Text style={{fontSize: 18, color: '#ffffff'}}>{redeem==true?'Redeemed':'Redeem'}</Text>
+              onPress={() =>
+                redeem == true || item.hasRedeemedOffer == true
+                  ? null
+                  : toggleRedeem(redeem, setredeem, item.id)
+              }>
+              <Text
+                style={{
+                  fontSize: size.medium(),
+                  color: '#ffffff',
+                  textShadowColor: 'black',
+                  textShadowOffset: {width: 0, height: 0},
+                  textShadowRadius: 5,
+                }}>
+                {redeem == true ? 'Redeemed' : 'Redeem'}
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -183,22 +273,38 @@ const WalletSecondScreen = ({navigation}) => {
         /> */}
       </View>
       <View style={styles.container}>
-        <Text style={styles.topText}>Redeem</Text>
-        <Text style={styles.topText}>your tokens</Text>
+        <Text style={styles.topText}>Redeem your tokens</Text>
+        {/* <Text style={styles.topText}>your tokens</Text> */}
+        <View style={{flexDirection:'row'}}>
         <Text
           style={{
-            fontSize: 18,
+            fontSize: size.medium(),
             //   textAlign: 'center',
             color: '#00BBB4',
             // marginTop: 25,
           }}>
-          ChAAK$ to spend
-        </Text>
+          ChAAK{''}</Text>
+          {( <FontAwesome
+            name={'dollar'}
+            size={17}
+            color='#00BBB4'
+            style={{ transform: [{ rotate: '15deg' }],marginTop:2 }}
+          />)}
+          <Text  style={{
+            fontSize: size.medium(),
+            //   textAlign: 'center',
+            color: '#00BBB4',
+            // marginTop: 25,
+          }}>{' '}to spend</Text>
+          </View>
         <Text
           style={{
-            fontSize: 48,
+            fontSize: size.Xlarge(),
 
             color: 'white',
+            textShadowColor: 'black',
+            textShadowOffset: {width: 1, height: 0},
+            textShadowRadius: 10,
             // marginTop: -10,
           }}>
           {totalChaak}
@@ -210,15 +316,17 @@ const WalletSecondScreen = ({navigation}) => {
             alignItems: 'flex-end',
           }}>
           <TouchableOpacity
-          onPress={()=>navigation.navigate('RedeemHistory')}
-          >
+            onPress={() => navigation.navigate('RedeemHistory')}>
             <Text
               style={{
                 color: '#00BBB4',
-                fontSize: 15,
+                fontSize: size.small(),
                 marginRight: 5,
                 borderBottomWidth: 1,
                 borderBottomColor: '#00BBB4',
+                textShadowColor: 'black',
+                  textShadowOffset: {width: 0, height: 1},
+                  textShadowRadius: 10,
               }}>
               Redeem History
             </Text>
@@ -226,26 +334,14 @@ const WalletSecondScreen = ({navigation}) => {
         </View>
       </View>
 
-      <View style={{height: windowHeight * 0.65}}>
-        {loading == true ? (
-          <View
-            style={{
-              height: '100%',
-              width: '100%',
-              // backgroundColor: 'red',
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}>
-            <ActivityIndicator
-              size={100}
-              color={'#00BBB4'}
-              // color={'orange'}
-              // style={{backgroundColor: 'red'}}
-            />
-          </View>
-        ) : (
+      <View style={{height: windowHeight * 0.6}}>
+      
+          
           <FlatList
             data={data}
+            refreshControl={<RefreshControl refreshing={loading}  onRefresh={()=>getOffers2(1)} />}
+            ListFooterComponent={lisFooterView}
+
             keyExtractor={(item, index) => index}
             contentContainerStyle={{paddingBottom: windowHeight * 0.2}}
             renderItem={({item}) => {
@@ -254,7 +350,7 @@ const WalletSecondScreen = ({navigation}) => {
             onEndReached={handleEndReached}
             onEndReachedThreshold={0.7}
           />
-        )}
+       
 
         {/* <ScrollView style={{width: '100%', height: '100%'}}>
           <View style={{paddingBottom: windowHeight * 0.2}}>
@@ -272,15 +368,18 @@ const WalletSecondScreen = ({navigation}) => {
 const styles = StyleSheet.create({
   container: {
     // flex: 1,
-    // height: windowHeight * 0.3,
+    height: windowHeight * 0.25,
     paddingBottom: 10,
     // backgroundColor: 'orange',
     justifyContent: 'center',
     alignItems: 'center',
   },
   topText: {
-    fontSize: 38,
+    fontSize: size.Xlarge(),
     color: 'white',
+    textShadowColor: 'black',
+                  textShadowOffset: {width: 0, height: 1},
+                  textShadowRadius: 10,
   },
 });
 

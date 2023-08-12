@@ -12,7 +12,7 @@ function AppNavigation() {
     // const actions = authSlice.actions;
     // const [isAuth,setIsAuth] = false
   const isAuth = useSelector(state => state.authSlice.isAuth);
-  console.log(isAuth)
+  console.log('theCheck===>',isAuth)
   const [totalChaakPoints, settotalChaakPoints] = useState(0)
   const [userToken, setuserToken] = useState('')
     return (

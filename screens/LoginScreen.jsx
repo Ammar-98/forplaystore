@@ -9,7 +9,10 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Alert,
+  KeyboardAvoidingView,
 } from 'react-native';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+
 import CheckBox from '@react-native-community/checkbox';
 import EmailPass from '../components/EmailPass';
 import Logolg from '../components/Logolg';
@@ -22,8 +25,13 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useEffect} from 'react';
 import AppContext from '../components/AppContext';
 import {useContext} from 'react';
+import {axiosPost} from '../axios/axios';
+import {axiosPostAuth} from '../axios/axios';
+import {Dimensions} from 'react-native';
+import * as size from '../components/FontSize';
 // import tw from 'nativewind'
-
+const windowWidth = Dimensions.get('window').width;
+const windowHeight = Dimensions.get('window').height;
 const LoginScreen = props => {
   const {userToken, setuserToken} = useContext(AppContext);
 
@@ -39,7 +47,9 @@ const LoginScreen = props => {
   const dispatch = useDispatch();
   const actions = authSlice.actions;
 
-  const handleEmailChange = text => setEmail(text);
+  const handleEmailChange = text => {
+    setEmail(text), seterrorMessage('');
+  };
   const handlePasswordChange = text => setPassword(text);
   const handleRememberMeChange = () => setRememberMe(!rememberMe);
 
@@ -49,8 +59,10 @@ const LoginScreen = props => {
       console.log('SavedToken', SavedToken);
       setuserToken(SavedToken);
       if (SavedToken !== null) {
-        setloading(false);
-        dispatch(actions.setAuth());
+        // setloading(false);
+        console.log('inherrererererer');
+        dispatch(actions.setAuth(true));
+        // props.navigation.navigate('CompleteProfileScreen');
       } else {
         setloading(false);
       }
@@ -76,9 +88,11 @@ const LoginScreen = props => {
   };
 
   const handleLogin = async () => {
+    console.log('email', email)
+    console.log('password', password)
     seterrorMessage('');
     if (validateEmail(email)) {
-      if (password !== '') {
+      if (String(password).length >= 8) {
         try {
           setloading(true);
           const urlToHit = 'https://api.kachaak.com.sg/api/auth/user/login';
@@ -91,13 +105,14 @@ const LoginScreen = props => {
             email: email,
             password: password,
           });
-          const response = await axios.post(urlToHit, body, config);
+          const response = await axiosPostAuth(urlToHit, body, config);
           console.log('response', response.data);
           if (response.data !== undefined) {
             saveToken(response.data.token);
             setuserToken(response.data.token);
-            setloading(false);
-            dispatch(actions.setAuth());
+            // setloading(false);
+            // dispatch(actions.setAuth());
+            props.navigation.navigate('CompleteProfileScreen');
           } else {
             setloading(false);
             Alert.alert('Login error:100');
@@ -108,8 +123,8 @@ const LoginScreen = props => {
           seterrorMessage(String(e.response.data.error));
         }
       } else {
-        console.log('emptyPassword');
-        seterrorMessage('Password cannot be empty');
+        console.log('Password must have least 8 characters');
+        seterrorMessage('Password must have least 8 characters');
       }
     } else {
       seterrorMessage('Invalid Email Format');
@@ -119,6 +134,7 @@ const LoginScreen = props => {
   };
   const handleRoute = () => {
     props.navigation.navigate('SignupScreen');
+    // props.navigation.navigate('CompleteProfileScreen')
   };
 
   useEffect(() => {
@@ -134,7 +150,7 @@ const LoginScreen = props => {
           alignItems: 'center',
           backgroundColor: '#343643',
         }}>
-        <ActivityIndicator size={200} color={'525461'} />
+        <ActivityIndicator size={30} color={'525461'} />
       </View>
     );
   } else {
@@ -142,50 +158,95 @@ const LoginScreen = props => {
       <ImageBackground
         source={require('../assets/linearbg.png')}
         style={{flex: 1}}>
-        <View classN style={styles.container}>
-          <Logolg width={165} height={133} />
-          <EmailPass
-            handleEmailChange={handleEmailChange}
-            handlePasswordChange={handlePasswordChange}
-          />
-          <Text style={{color: 'red', margin: 5, fontSize: 15}}>
-            {errorMessage}
-          </Text>
+        <View style={styles.container}>
+          <KeyboardAvoidingView behavior="position" keyboardVerticalOffset={0}>
+            <View
+              style={{
+                // backgroundColor: 'green',
+                width: windowWidth,
+                height: windowHeight * 0.4,
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}>
+              <Logolg width={windowHeight * 0.25} height={windowHeight * 0.3} />
+            </View>
+
+            <View
+              style={{
+                width: windowWidth,
+                height: windowHeight * 0.2, //total6
+                // backgroundColor: 'orange',
+                alignItems: 'center',
+              }}>
+              <EmailPass //height 0.2
+                handleEmailChange={handleEmailChange}
+                handlePasswordChange={handlePasswordChange}
+              />
+            </View>
+            {errorMessage != '' ? (
+              <Text
+                style={{
+                  color: 'red',
+                  margin: 5,
+                  fontSize: size.small(),
+                  textAlign: 'center',
+                  // marginBottom: windowHeight * 0.05,
+                }}>
+                {errorMessage}
+              </Text>
+            ) : null}
+          </KeyboardAvoidingView>
 
           <View
             style={{
-              marginBottom: '6%',
-              justifyContent: 'center',
+              // backgroundColor: 'blue',
+              width: windowWidth,
+              // height: windowHeight * 0.35,
               alignItems: 'center',
-              flexDirection: 'row',
-              gap: 4,
+              // paddingTop:20
             }}>
-            <Text style={[styles.text]}>Do you have a account?</Text>
-            <TouchableOpacity style={{marginTop: '8%'}} onPress={handleRoute}>
-              <Text style={{color: '#00BBB4', fontSize: 18}}>Signup</Text>
-            </TouchableOpacity>
-          </View>
-          {/* <View style={styles.buttonContainer}> */}
-          {/* <ButtonGradient width={'70%'} height={'20%'} /> */}
-
-          <Button
-            width={'40%'}
-            height={'7%'}
-            title={'Login'}
-            handleSignup={handleLogin}
-          />
-          {/* </View> */}
-
-          <View style={styles.bottomContainer}>
-            <View style={styles.checkboxWrapper}>
-              <CheckBox
-                tintColors="#FFFFFF"
-                value={rememberMe}
-                onValueChange={value => setRememberMe(value)}
-              />
-              <Text style={[styles.text, {marginTop: -2}]}>Remember me</Text>
+            
+            <View style={styles.bottomContainer}>
+              <View style={styles.checkboxWrapper}>
+                <CheckBox
+                  tintColors="#FFFFFF"
+                  value={rememberMe}
+                  onValueChange={value => setRememberMe(value)}
+                />
+                <Text style={[styles.text]}>Remember me</Text>
+              </View>
+              <TouchableOpacity
+                onPress={() => props.navigation.navigate('ForgotPassword')}>
+                <Text style={{fontSize: size.small(), color: 'white'}}>
+                  Forgot Password?
+                </Text>
+              </TouchableOpacity>
             </View>
-            <Text style={{fontSize: 16, color: 'white'}}>Forgot Password?</Text>
+            <Button
+              width={'40%'}
+              height={windowHeight * 0.07}
+              title={'Login'}
+              handleSignup={handleLogin}
+            />
+            <View
+              style={{
+                justifyContent: 'center',
+                alignItems: 'center',
+                flexDirection: 'row',
+                height: windowHeight * 0.1,
+                width: windowHeight,
+                // backgroundColor: 'blue',
+              }}>
+              <Text style={[styles.text]}>Don't have an account?</Text>
+              <TouchableOpacity style={{}} onPress={handleRoute}>
+                <Text style={{color: '#00BBB4', fontSize: size.medium(),fontWeight:'bold'}}>
+                  {' '}
+                  Sign Up
+                </Text>
+               
+              </TouchableOpacity>
+            </View>
+          
           </View>
         </View>
       </ImageBackground>
@@ -199,8 +260,6 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     // justifyContent: 'center',
-    color: 'white',
-    top: '20%',
   },
 
   buttonContainer: {
@@ -232,9 +291,8 @@ const styles = StyleSheet.create({
     height: 140,
   },
   text: {
-    fontSize: 16,
+    fontSize: size.small(),
     color: 'white',
-    marginTop: '8%',
   },
   checkboxWrapper: {
     flexDirection: 'row',
@@ -243,10 +301,14 @@ const styles = StyleSheet.create({
   },
   bottomContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    height: windowHeight * 0.1,
+    // justifyContent: 'space-between',
     alignItems: 'center',
-    gap: 52,
-    marginTop: 15,
+    justifyContent: 'space-between',
+    width: windowWidth * 0.85,
+    // backgroundColor:'red'
+    // gap: 52,
+    // marginTop: 15,
   },
 });
 

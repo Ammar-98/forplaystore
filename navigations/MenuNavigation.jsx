@@ -11,6 +11,9 @@ import {useDispatch, useSelector} from 'react-redux';
 import {authSlice} from '../store/authSlice';
 import HomeStack from '../screens/HomeStack';
 import {Dimensions} from 'react-native';
+import DiscountOfferScreen from '../screens/DiscountOfferScreen';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import FontAwesome from 'react-native-vector-icons/FontAwesome';
 
 const WindowHeight = Dimensions.get('window').height;
 const WindowWidth = Dimensions.get('window').width;
@@ -26,24 +29,30 @@ const MenuNavigation = () => {
   return (
     <View style={{height: WindowHeight, width: WindowWidth}}>
       <Tab.Navigator
+
         screenOptions={{
           headerShown: false,
           tabBarShowLabel: false,
           // style:{padding:4,margin:10}
           tabBarStyle: atHome
             ? {display: 'none'}
-            : {height: WindowHeight * 0.1},
+            : {
+                height: WindowHeight * 0.1,
+                paddingTop:3,
+                // backgroundColor: 'red',
+                justifyContent: 'flex-start',
+              },
         }}>
-        <Tab.Screen
+          <Tab.Screen
           name="Home"
           resizeMode="contain"
           component={HomeStack}
           // style={{display:'none'}}
-          listeners={{
-            tabPress: e => {
-              dispatch(actions.setAtHome(true));
-            },
-          }}
+          // listeners={{
+          //   tabPress: e => {
+          //     dispatch(actions.setAtHome(true));
+          //   },
+          // }}
           options={{
             tabBarIcon: ({focused}) => {
               return (
@@ -54,31 +63,33 @@ const MenuNavigation = () => {
                     // backgroundColor: 'red',
                     height: '100%',
                     width: WindowWidth * 0.1,
+                    justifyContent: 'center',
                   }}>
                   <View
                     style={{
                       width: WindowWidth * 0.1,
-                      height: '70%',
+                      height: '65%',
                       justifyContent: 'center',
                       alignItems: 'center',
 
                       // backgroundColor: 'blue',
                     }}>
-                    <Image
-                      source={require('../assets/home.png')}
-                      resizeMode="contain"
+                    <MaterialIcons
+                      name={'home'}
+                      size={focused?30: 27}
+                      color={focused ? '#00BBB4' : 'black'}
                       style={{
-                        width: WindowWidth * 0.1,
-                        height: focused ? '70%' : '55%',
-                        tintColor: focused ? '#00BBB4' : 'black',
-                      }}
+                        textShadowColor: 'gray',
+                        textShadowOffset: {width: 0, height: 0},
+                        textShadowRadius: 3,}}
                     />
                   </View>
                   <View
                     style={{
-                      height: '30%',
+                      height: '35%',
                       alignItems: 'center',
-                      justifyContent: 'center',
+                      justifyContent:'flex-start'
+                      // justifyContent: 'flex-start',
                     }}>
                     <Text
                       style={{
@@ -93,7 +104,7 @@ const MenuNavigation = () => {
             },
           }}
         />
-        <Tab.Screen
+          <Tab.Screen
           name="Wallet"
           component={Wallet}
           resizeMode="contain"
@@ -111,26 +122,34 @@ const MenuNavigation = () => {
                   <View
                     style={{
                       width: WindowWidth * 0.1,
-                      height: '70%',
+                      height: '65%',
                       justifyContent: 'center',
+                      alignItems: 'center',
+
+
+                      // justifyContent: 'center',
 
                       // backgroundColor: 'blue',
                     }}>
-                    <Image
-                      source={require('../assets/wallet.png')}
-                      resizeMode="contain"
+                    {/* <FontAwesome
+                      name={'dollar'}
+                      size={25}
+                      color={focused ? '#00BBB4' : 'black'}
+                    /> */}
+                    <MaterialIcons
+                      name={'account-balance-wallet'}
+                      size={focused?30: 25}
                       style={{
-                        width: WindowWidth * 0.1,
-                        height: focused ? '70%' : '55%',
-                        tintColor: focused ? '#00BBB4' : 'black',
-                      }}
+                      textShadowColor: 'gray',
+                      textShadowOffset: {width: 0, height: 0},
+                      textShadowRadius: 3,}}
+                      color={focused ? '#00BBB4' : 'black'}
                     />
                   </View>
                   <View
                     style={{
-                      height: '30%',
+                      height: '35%',
                       alignItems: 'center',
-                      justifyContent: 'center',
                     }}>
                     <Text
                       style={{
@@ -138,6 +157,69 @@ const MenuNavigation = () => {
                         color: focused ? '#00BBB4' : 'black',
                       }}>
                       Wallet
+                    </Text>
+                  </View>
+                </View>
+              );
+            },
+          }}
+        />
+        
+         <Tab.Screen
+          name="DiscountOfferScreen"
+          resizeMode="contain"
+          component={DiscountOfferScreen}
+          options={{
+            tabBarIcon: ({focused}) => {
+              return (
+                <View
+                  style={{
+                    height: '100%',
+                    width: WindowWidth * 0.15,
+                    alignItems: 'center',
+                  }}>
+                  <View
+                    style={{
+                      width: WindowWidth * 0.1,
+                      height: '65%',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+
+                      // backgroundColor: 'blue',
+                    }}>
+                    {/* <Image
+                      source={require('../assets/locate.png')}
+                      resizeMode="contain"
+                      style={{
+                        width: WindowWidth * 0.1,
+                        height: focused ? '70%' : '55%',
+                        tintColor: focused ? '#00BBB4' : 'black',
+                      }}
+                    /> */}
+                    <MaterialIcons
+                      name={'dynamic-feed'}
+                     size={focused?30: 25}
+                      color={focused ? '#00BBB4' : 'black'}
+                      style={{
+                        textShadowColor: 'gray',
+                        textShadowOffset: {width: 0, height: 0},
+                        textShadowRadius: 2,}}
+                    />
+                  </View>
+                  <View
+                    style={{
+                      height: '35%',
+                      alignItems: 'center',
+                      // justifyContent: 'center',
+                      width: '100%',
+                      // backgroundColor:'red'
+                    }}>
+                    <Text
+                      style={{
+                        fontSize: 10,
+                        color: focused ? '#00BBB4' : 'black',
+                      }}>
+                      Deals
                     </Text>
                   </View>
                 </View>
@@ -160,34 +242,33 @@ const MenuNavigation = () => {
                   <View
                     style={{
                       width: WindowWidth * 0.1,
-                      height: '70%',
+                      height: '65%',
                       justifyContent: 'center',
                       alignItems: 'center',
                       // backgroundColor: 'blue',
                     }}>
-                    <Image
-                      source={require('../assets/bulletin.png')}
-                      resizeMode="contain"
+                    <MaterialIcons
+                      name={'article'}
+                      size={focused?30: 25}
+                      color={focused ? '#00BBB4' : 'black'}
                       style={{
-                        width: focused ? '70%' : '60%',
-                        height: focused ? '70%' : '55%',
-                        tintColor: focused ? '#00BBB4' : 'black',
-                        resizeMode: 'stretch',
-                      }}
+                        textShadowColor: 'gray',
+                        textShadowOffset: {width: 0, height: 0},
+                        textShadowRadius: 3,}}
                     />
                   </View>
                   <View
                     style={{
-                      height: '30%',
+                      height: '35%',
                       alignItems: 'center',
-                      justifyContent: 'center',
+                      // justifyContent: 'center',
                     }}>
                     <Text
                       style={{
                         fontSize: 10,
                         color: focused ? '#00BBB4' : 'black',
                       }}>
-                      Bulletin
+                      Jobs
                     </Text>
                   </View>
                 </View>
@@ -206,33 +287,33 @@ const MenuNavigation = () => {
                   style={{
                     height: '100%',
                     width: WindowWidth * 0.15,
-                    alignItems:'center'
+                    alignItems: 'center',
                   }}>
                   <View
                     style={{
                       width: WindowWidth * 0.1,
-                      height: '70%',
+                      height: '65%',
                       justifyContent: 'center',
                       alignItems: 'center',
 
                       // backgroundColor: 'blue',
                     }}>
-                    <Image
-                      source={require('../assets/locate.png')}
-                      resizeMode="contain"
+                    <MaterialIcons
+                      name={'location-pin'}
+                      size={focused?30: 25}
+                      color={focused ? '#00BBB4' : 'black'}
                       style={{
-                        width: WindowWidth * 0.1,
-                        height: focused ? '70%' : '55%',
-                        tintColor: focused ? '#00BBB4' : 'black',
-                      }}
+                        textShadowColor: 'gray',
+                        textShadowOffset: {width: 0, height: 0},
+                        textShadowRadius: 3,}}
                     />
                   </View>
                   <View
                     style={{
-                      height: '30%',
+                      height: '35%',
                       alignItems: 'center',
-                      justifyContent: 'center',
-                      width:'100%',
+                      // justifyContent: 'center',
+                      width: '100%',
                       // backgroundColor:'red'
                     }}>
                     <Text
@@ -248,6 +329,7 @@ const MenuNavigation = () => {
             },
           }}
         />
+       
         <Tab.Screen
           name="Scan"
           resizeMode="contain"
@@ -263,36 +345,35 @@ const MenuNavigation = () => {
                   <View
                     style={{
                       width: WindowWidth * 0.1,
-                      height: '70%',
+                      height: '65%',
                       justifyContent: 'center',
                       alignItems: 'center',
 
                       // backgroundColor: 'blue',
                     }}>
-                    <Image
-                      source={require('../assets/scan.png')}
-                      resizeMode="contain"
+                    <MaterialIcons
+                      name={'qr-code-scanner'}
+                      size={focused?30: 25}
+                      color={ focused ? '#00BBB4' : 'black'}
                       style={{
-                        width: WindowWidth * 0.1,
-                        height: focused ? '70%' : '55%',
-                        tintColor: focused ? '#00BBB4' : 'black',
-                      }}
+                        textShadowColor: 'gray',
+                        textShadowOffset: {width: 0, height: 0},
+                        textShadowRadius: 2,}}
                     />
                   </View>
                   <View
                     style={{
-                      height: '30%',
+                      height: '35%',
                       alignItems: 'center',
-                      justifyContent: 'center',
-                     
+                      // justifyContent: 'center',
                     }}>
-                  <Text
-                    style={{
-                      fontSize: 10,
-                      color: focused ? '#00BBB4' : 'black',
-                    }}>
-                    Scan
-                  </Text>
+                    <Text
+                      style={{
+                        fontSize: 10,
+                        color: focused ? '#00BBB4' : 'black',
+                      }}>
+                      Scan
+                    </Text>
                   </View>
                 </View>
               );

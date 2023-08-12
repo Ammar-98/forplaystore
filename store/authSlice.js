@@ -11,8 +11,8 @@ export const authSlice = createSlice({
     // takePhotoClicked: false,
   },
   reducers: {
-    setAuth: state => {
-      state.isAuth = !state.isAuth;
+    setAuth: (state ,action) => {
+      state.isAuth = action.payload;
     },
       setAtHome: (state, action) => {
         

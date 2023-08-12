@@ -9,8 +9,10 @@ import {
   TouchableOpacity,
   Alert,
 } from 'react-native';
+import {RefreshControl} from 'react-native';
 import React from 'react';
 import {useSelector} from 'react-redux';
+import * as size from '../../components/FontSize';
 // import ButtonGradient from '../../';
 import Button from './bulletinComponents/Button';
 import uuid from 'react-native-uuid';
@@ -19,12 +21,15 @@ import {Dimensions} from 'react-native';
 import AppContext from '../../components/AppContext';
 import {useContext} from 'react';
 import axios from 'axios';
+import {axiosGet} from '../../axios/axios';
 import {ActivityIndicator} from 'react-native';
 import jwtDecode from 'jwt-decode';
-
+import {axiosPost} from '../../axios/axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import BulletinSecondScreen from './BulletinSecondScreen';
 const windowHeight = Dimensions.get('window').height;
 const WindowWidth = Dimensions.get('window').width;
-const BulletinFirstScreen = ({navigation}) => {
+const BulletinFirstScreen = props => {
   const {userToken, setuserToken} = useContext(AppContext);
 
   const [data, setData] = useState([]);
@@ -58,13 +63,29 @@ const BulletinFirstScreen = ({navigation}) => {
     }
   };
 
+  const getUserToken = async () => {
+    try {
+      const savedToken = await AsyncStorage.getItem('LoginToken');
 
-const applyforJob=async(setapplied, jobID)=>{
-  console.log('applItem', jobID.id)
-  try{
-    const urlToHit = 'https://api.kachaak.com.sg/api/jobs/apply';
-      const token = userToken;
-      const userID=getuserID(userToken)
+      // console.log('savedTokenxxxxxxxx', savedToken);
+
+      if (savedToken != null) {
+        return savedToken;
+      } else {
+        return null;
+      }
+    } catch (err) {
+      console.log('getUserTokenError', err);
+      return null;
+    }
+  };
+
+  const applyforJob = async (setapplied, jobID) => {
+    console.log('applItem', jobID.id);
+    try {
+      const urlToHit = 'https://api.kachaak.com.sg/api/jobs/apply';
+      const token = await getUserToken();
+      const userID = await getuserID(userToken);
       const config = {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -74,23 +95,21 @@ const applyforJob=async(setapplied, jobID)=>{
       const body = JSON.stringify({
         userId: userID,
         jobId: jobID.id,
-      
       });
 
-      const response = await axios.post(urlToHit, body, config);
-      console.log('response', response.data);
-      setapplied(true)
+      const response = await axiosPost(urlToHit, body, config);
+      // console.log('response', response.data);
+      setapplied(true);
       // setloading(false);
       // Alert.alert('Successful')
       // props.navigation.goBack();
-  }catch(error){
-    console.log('error:', error.response.data)
-    if(error.response.data.error=='Job already applied')
-    {
-      Alert.alert(error.response.data.error)
+    } catch (error) {
+      console.log('error:', error.response.data);
+      if (error.response.data.error == 'Job already applied') {
+        Alert.alert(error.response.data.error);
+      }
     }
-  }
-}
+  };
   const getJobs = async page => {
     try {
       setloading(true);
@@ -103,11 +122,32 @@ const applyforJob=async(setapplied, jobID)=>{
           Authorization: `Bearer ${token}`,
         },
       };
-      const response = await axios.get(urlToHit, config);
+      const response = await axiosGet(urlToHit);
       const responseData = response.data;
       const newData = responseData.data;
-      console.log('newData', newData);
+      // console.log('newData', newData);
       setData(prevData => [...prevData, ...newData]);
+      setHasNextPage(responseData.pagination.hasNextPage);
+      setloading(false);
+    } catch (e) {
+      console.log('e', e);
+    }
+  };
+  const getJobs2 = async page => {
+    try {
+      // console.log('hasnetpage', hasNextPage)
+      setCurrentPage(1);
+      setloading(true);
+      console.log('called2');
+      const token = userToken;
+      const urlToHit =
+        'https://api.kachaak.com.sg/api//jobs?pageNo=' + page + '&pageSize=7';
+
+      const response = await axiosGet(urlToHit);
+      const responseData = response.data;
+      const newData = responseData.data;
+      // console.log('newData', newData);
+      setData(newData);
       setHasNextPage(responseData.pagination.hasNextPage);
       setloading(false);
     } catch (e) {
@@ -118,10 +158,12 @@ const applyforJob=async(setapplied, jobID)=>{
   useEffect(() => {
     // fetchData(currentPage);
     getJobs(currentPage);
-    console.log('userToken', userToken);
+    // console.log('userToken', userToken);
   }, []);
 
   const handleEndReached = () => {
+    console.log('hasNextPage', hasNextPage);
+    console.log('currentPage', currentPage);
     if (hasNextPage) {
       const nextPage = currentPage + 1;
       setCurrentPage(nextPage);
@@ -133,46 +175,80 @@ const applyforJob=async(setapplied, jobID)=>{
   const handleNavigate = () => {
     navigation.navigate('BulletinScreen2');
   };
-  const redeem = [
-    {
-      headiing: 'Usher at Singapure Farmula One 2024',
-      info: 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Commodi, nam neque sed deleniti numquam minus! Commodi dicta enim accusantium omnis repellendus doloremque ad nulla voluptate,!',
-    },
-    {
-      headiing: 'Usher at Singapure Farmula One 2024',
-      info: 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Commodi, nam neque sed deleniti numquam minus! Commodi dicta enim accusantium omnis repellendus doloremque ad nulla voluptate,!',
-    },
-    {
-      headiing: 'Usher at Singapure Farmula One 2024',
-      info: 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Commodi, nam neque sed deleniti numquam minus! Commodi dicta enim accusantium omnis repellendus doloremque ad nulla voluptate,!',
-    },
-    {
-      headiing: 'Usher at Singapure Farmula One 2024',
-      info: 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Commodi, nam neque sed deleniti numquam minus! Commodi dicta enim accusantium omnis repellendus doloremque ad nulla voluptate,!',
-    },
-    {
-      headiing: 'Usher at Singapure Farmula One 2024',
-      info: 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Commodi, nam neque sed deleniti numquam minus! Commodi dicta enim accusantium omnis repellendus doloremque ad nulla voluptate,!',
-    },
-  ];
 
+  const loadingView = () => {
+    if (loading == true) {
+      return (
+        <View
+          style={{
+            // height: '100%',
+            width: '100%',
+            // backgroundColor: 'red',
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}>
+          <ActivityIndicator
+            size={30}
+            color={'#00BBB4'}
+            // color={'orange'}
+            // style={{backgroundColor: 'red'}}
+          />
+        </View>
+      );
+    } else {
+      return null;
+    }
+  };
   const RewardItem = ({item}) => {
-const [applied, setapplied] = useState(item?.isApplied==true?true:false)
+    const [applied, setapplied] = useState(
+      item?.isApplied == true ? true : false,
+    );
     return (
-      <View style={{padding: 10, borderTopWidth: 1, borderTopColor: 'white'}}>
+      <View style={{padding: 10, borderBottomWidth: 1, borderBottomColor: 'white'}}>
         <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
-          <View style={{width: '70%'}}>
-            <Text style={{fontWeight: 'bold', fontSize: 14, color: '#00BBB4'}}>
-              {item.title}
-            </Text>
-            <Text style={{fontSize: 12, color: 'white'}}>
-              Job Status: {item.jobStatus}
-            </Text>
+          <TouchableOpacity
+            style={{width: '70%'}}
+            // onPress={()=>props.navigation.navigate('JobDescription',{data:{item,applied,setapplied}})}
+            onPress={() =>
+              props.navigation.navigate('JobDescription', {data: {item}})
+            }>
+            <View style={{width: '100%'}}>
+              <Text
+                style={{
+                  fontWeight: 'bold',
+                  fontSize: size.small(),
+                  color: '#00BBB4',
+                  textShadowColor: 'black',
+                  textShadowOffset: {width: 0, height: 0},
+                  textShadowRadius: 5,
+                }}>
+                {item.title}
+              </Text>
+              <Text
+                style={{
+                  fontSize: size.Xsmall(),
+                  color: 'white',
+                  textShadowColor: 'black',
+                  textShadowOffset: {width: 0, height: 0},
+                  textShadowRadius: 5,
+                }}>
+                Job Status: {item.jobStatus}
+              </Text>
 
-            <Text style={{fontSize: 12, color: 'white'}}>
-              {item.description}
-            </Text>
-          </View>
+              <Text
+                style={{
+                  fontSize: size.Xsmall(),
+                  color: 'white',
+                  textShadowColor: 'black',
+                  textShadowOffset: {width: 0, height: 0},
+                  textShadowRadius: 5,
+                }}
+                numberOfLines={3}
+                ellipsizeMode="tail">
+                {item.description}
+              </Text>
+            </View>
+          </TouchableOpacity>
           {/* edr Botton component dalna ha walletComponents k andar jo pra hua */}
 
           {/* <Button
@@ -182,22 +258,43 @@ const [applied, setapplied] = useState(item?.isApplied==true?true:false)
             alterTitle={'Applied'}
             handleNavigate={handleNavigate}
           /> */}
-
           <View
             style={{
-              width: WindowWidth * 0.25,
-              height: windowHeight*0.05,
+              // height: '100%',
+              // backgroundColor: 'red',
               justifyContent: 'center',
-              alignItems: 'center',
-              backgroundColor:applied==true?'#525461' : '#00BBB4',
-              //  : '#525461',
-              borderRadius: 5,
-              marginHorizontal: WindowWidth * 0.01,
             }}>
-            <TouchableOpacity
-            onPress={() => applied==true?null:applyforJob(setapplied, item)}
-            >
-              <Text style={{fontSize: 18, color: '#ffffff'}}>{applied==true?'Applied':'Apply'}</Text>
+               <TouchableOpacity
+                // onPress={() => applied==true?null:applyforJob(setapplied, item)}
+                // onPress={()=>props.navigation.navigate('JobDescription',{data:{item,applied,setapplied}})}
+                onPress={() =>
+                  props.navigation.navigate('JobDescription', {data: {item}})
+                }>
+            <View
+              style={{
+                // width: WindowWidth * 0.25,
+                // height: windowHeight * 0.05,
+paddingHorizontal:20,paddingVertical:10,
+                justifyContent: 'center',
+                alignItems: 'center',
+                backgroundColor: applied == true ? '#525461' : '#00BBB4',
+                //  : '#525461',
+                borderRadius: 5,
+                marginHorizontal: WindowWidth * 0.01,
+              }}>
+             
+                <Text
+                  style={{
+                    fontSize: size.small(),
+                    color: '#ffffff',
+                    textShadowColor: 'black',
+                    textShadowOffset: {width: 0, height: 0},
+                    textShadowRadius: 5,
+                  }}>
+                  {applied == true ? 'Applied' : 'Read More'}
+                </Text>
+             
+            </View>
             </TouchableOpacity>
           </View>
         </View>
@@ -209,50 +306,39 @@ const [applied, setapplied] = useState(item?.isApplied==true?true:false)
     <ImageBackground
       source={require('../../assets/linearbg.png')}
       style={{flex: 1}}>
-      <View style={{gap: 2}}>
-        <View style={{paddingTop: 4, paddingLeft: 6}}></View>
+      <View>
         <View style={styles.container}>
-          <Text style={[styles.topText, {marginTop: 35}]}>
-            Earn more{' '}
-            <Text style={[styles.topText, {color: '#00BBB4'}]}>CHAAK$</Text>
+          <Text style={[styles.topText]}>
+            JOBS
+            {/* <Text style={[styles.topText, {color: '#00BBB4'}]}>CHAAK$</Text> */}
           </Text>
-          <Text style={[styles.topText, {fontSize: 26}]}>
+          {/* <Text style={[styles.topText, {fontSize: 26}]}>
             with these job opportunities
-          </Text>
+          </Text> */}
         </View>
         <View
           style={{
             width: '100%',
-            height: windowHeight * 0.65,
+            height: windowHeight * 0.8,
+            // backgroundColor:'red'
           }}>
-          {loading == true ? (
-            <View
-              style={{
-                height: '100%',
-                width: '100%',
-                // backgroundColor: 'red',
-                justifyContent: 'center',
-                alignItems: 'center',
-              }}>
-              <ActivityIndicator
-                size={100}
-                color={'#00BBB4'}
-                // color={'orange'}
-                // style={{backgroundColor: 'red'}}
+          <FlatList
+            data={data}
+            ListFooterComponent={loadingView}
+            refreshControl={
+              <RefreshControl
+                refreshing={loading}
+                onRefresh={() => getJobs2(1)}
               />
-            </View>
-          ) : (
-            <FlatList
-              data={data}
-              keyExtractor={(item, index) => index}
-              contentContainerStyle={{paddingBottom: windowHeight * 0.2}}
-              renderItem={({item}) => {
-                return <RewardItem item={item} />;
-              }}
-              onEndReached={handleEndReached}
-              onEndReachedThreshold={0.7}
-            />
-          )}
+            }
+            keyExtractor={(item, index) => index}
+            contentContainerStyle={{paddingBottom: windowHeight * 0.2}}
+            renderItem={({item}) => {
+              return <RewardItem item={item} />;
+            }}
+            onEndReached={handleEndReached}
+            onEndReachedThreshold={0.7}
+          />
         </View>
         {/* <ScrollView style={{width: '100%', height: '80%'}}>
             <View>
@@ -269,15 +355,20 @@ const [applied, setapplied] = useState(item?.isApplied==true?true:false)
 const styles = StyleSheet.create({
   container: {
     // flex: 1,
-    height: windowHeight * 0.3,
+    height: windowHeight * 0.1,
     justifyContent: 'center',
+    borderBottomColor: 'white',
+    borderBottomWidth: 1,
     // backgroundColor:'orange',
 
     alignItems: 'center',
   },
   topText: {
-    fontSize: 38,
+    fontSize: size.Xlarge(),
     color: 'white',
+    textShadowColor: 'black',
+    textShadowOffset: {width: 0, height: 0},
+    textShadowRadius: 5,
   },
 });
 

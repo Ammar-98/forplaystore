@@ -1,36 +1,60 @@
-import {StyleSheet, Text, View,FlatList} from 'react-native';
+import {
+  StyleSheet,
+  Text,
+  View,
+  FlatList,
+  ActivityIndicator,
+} from 'react-native';
 import React from 'react';
 import {Dimensions} from 'react-native';
-import { useState,useEffect } from 'react';
-import { useContext } from 'react';
+import {useState, useEffect} from 'react';
+import {useContext} from 'react';
 import AppContext from '../components/AppContext';
 import axios from 'axios';
-
+import {axiosGet} from '../axios/axios';
+import moment from 'moment';
+import * as size from '../components/FontSize';
+import {RefreshControl} from 'react-native';
 
 const windowHeight = Dimensions.get('window').height;
 const windowWidth = Dimensions.get('window').width;
 const HeaderView = () => {
   return (
     <View style={styles.HeaderView}>
-      <Text style={styles.HeaderText}>Discount Offers</Text>
-      <Text style={styles.subHeadertext}>find perfect discount</Text>
+      <Text style={styles.HeaderText}>Deals</Text>
+      <Text style={styles.subHeadertext}>
+        Latest offers, updated every 15 minutes
+      </Text>
     </View>
   );
 };
 
-const Coloumn1 = () => {
+const Coloumn1 = props => {
+  // console.log('props', props.data.item)
   return (
     <View style={styles.Coloumn1}>
       <View style={styles.Row1C1}>
-        <Text style={styles.RestaurantNameText}>Restaurant Name</Text>
+        <Text style={styles.RestaurantNameText}>
+          {props.data.item.franchise.brandName}
+        </Text>
       </View>
       <View style={styles.Row2C1}>
-        <Text style={{color: 'white'}}>Raining Strategy</Text>
+        <Text
+          style={{
+            color: 'white',
+            fontSize: size.Xsmall(),
+            textShadowColor: 'black',
+            textShadowOffset: {width: 0, height: 0},
+            textShadowRadius: 10,
+          }}>
+          {props.data.item.strategy.category}
+        </Text>
       </View>
     </View>
   );
 };
-const Coloumn2 = () => {
+const Coloumn2 = props => {
+  console.log('props', props.data.item);
   return (
     <View style={styles.Coloumn}>
       <View style={styles.Row}>
@@ -39,11 +63,15 @@ const Coloumn2 = () => {
             height: '100%',
             width: '50%',
             // backgroundColor: 'yellow',
+            padding: 3,
             alignItems: 'center',
             justifyContent: 'center',
           }}>
           <Text style={styles.ColorFont1}>Start Date & Time</Text>
-          <Text style={styles.numberFont}> 13/12/2023</Text>
+          <Text style={styles.numberFont}>
+            {' '}
+            {moment(props.data.item.strategy.startTime).format('DD/MM/YYYY')}
+          </Text>
         </View>
         <View
           style={{
@@ -54,7 +82,9 @@ const Coloumn2 = () => {
             justifyContent: 'center',
           }}>
           <Text style={styles.ColorFont}>End Date & Time</Text>
-          <Text style={styles.numberFont}> 13/12/2024</Text>
+          <Text style={styles.numberFont}>
+            {moment(props.data.item.strategy.expireTime).format('DD/MM/YYYY')}
+          </Text>
         </View>
       </View>
 
@@ -68,7 +98,10 @@ const Coloumn2 = () => {
             justifyContent: 'center',
           }}>
           <Text style={styles.ColorFont}>Discount on Food</Text>
-          <Text style={styles.numberFont}> 10%</Text>
+          <Text style={styles.numberFont}>
+            {' '}
+            {props.data.item.foodDiscount}%
+          </Text>
         </View>
         <View
           style={{
@@ -79,93 +112,132 @@ const Coloumn2 = () => {
             justifyContent: 'center',
           }}>
           <Text style={styles.ColorFont}>Discount on Beverages</Text>
-          <Text style={styles.numberFont}> 15%</Text>
+          <Text style={styles.numberFont}>
+            {props.data.item.beverageDiscount}%
+          </Text>
         </View>
       </View>
     </View>
   );
 };
 
-const DiscountCardView = () => {
+const DiscountCardView = props => {
   return (
     <View style={styles.DiscountCardView}>
-      <Coloumn1 />
-      <Coloumn2 />
+      <Coloumn1 data={props} />
+      <Coloumn2 data={props} />
     </View>
   );
 };
 
-
-
-
-
-
-
-
 export default function DiscountOfferScreen() {
-
-const {userToken}=useContext(AppContext)
+  const {userToken} = useContext(AppContext);
   const [data, setData] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [hasNextPage, setHasNextPage] = useState(false);
   const [loading, setloading] = useState(true);
 
-const getDiscountOffer=async()=>{
-  try{
-    setloading(true);
-    const token = userToken;
-    const urlToHit = 'https://api.kachaak.com.sg/api/strategies/discountOffers';
-    const config = {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    };
-    const response = await axios.get(urlToHit, config);
-    console.log('response', response.data)
-    const responseData = response.data;
-    const newData = responseData.data;
-    setData(prevData => [...prevData, ...newData]);
-    setHasNextPage(responseData.pagination?.hasNextPage);
-    setloading(false);
+  const getDiscountOffer = async () => {
+    try {
+      setloading(true);
+      const token = userToken;
+      const urlToHit =
+        'https://api.kachaak.com.sg/api/strategies/discountOffers';
 
+      const response = await axiosGet(urlToHit);
+      console.log('response', response.data);
+      const responseData = response.data;
+      const newData = responseData.data;
+      setData(prevData => [...prevData, ...newData]);
+      setHasNextPage(responseData.pagination?.hasNextPage);
+      setloading(false);
+    } catch (error) {
+      console.log('error', error);
+    }
+  };
+  const getDiscountOffer2 = async page => {
+    try {
+      setCurrentPage(1);
+      setloading(true);
+      const token = userToken;
+      const urlToHit =
+        'https://api.kachaak.com.sg/api/strategies/discountOffers';
 
-  }catch(error){
-    console.log('error', error)
-  }
-}
+      const response = await axiosGet(urlToHit);
+      console.log('response', response.data);
+      const responseData = response.data;
+      const newData = responseData.data;
+      setData(newData);
+      setHasNextPage(responseData.pagination?.hasNextPage);
+      setloading(false);
+    } catch (error) {
+      console.log('error', error);
+    }
+  };
 
+  const handleEndReached = () => {
+    if (hasNextPage) {
+      const nextPage = currentPage + 1;
+      setCurrentPage(nextPage);
+      getJobs(nextPage);
+    }
+  };
+  const emptyView = () => {
+    return (
+      <View
+        style={{
+          alignItems: 'center',
+          justifyContent: 'center',
+          width: windowWidth,
+          height: windowHeight * 0.2,
+        }}>
+        <Text style={{color: 'gray', fontSize: size.small()}}>
+          You will be notified when a new offer is available
+        </Text>
+      </View>
+    );
+  };
 
+  useEffect(() => {
+    getDiscountOffer();
+  }, []);
 
-const handleEndReached = () => {
-  if (hasNextPage) {
-    const nextPage = currentPage + 1;
-    setCurrentPage(nextPage);
-    getJobs(nextPage);
-  }
-};
+  const lisFooterView = () => {
+    return loading == true ? (
+      <View
+        style={{
+          alignItems: 'center',
+          backgroundColor: '#00BBB4',
+          marginTop:10,
 
-
-
-useEffect(() => {
-  getDiscountOffer()
-
-}, [])
-
-
+          width: windowWidth,
+        }}>
+        <ActivityIndicator size={30} color={'black'} />
+      </View>
+    ) : null;
+  };
 
   return (
     <View style={{alignItems: 'center', backgroundColor: '#00BBB4', flex: 1}}>
       <HeaderView />
       <FlatList
-            data={data}
-            keyExtractor={(item, index) => index}
-            contentContainerStyle={{paddingBottom: windowHeight * 0.2}}
-            renderItem={({item}) => {
-              return <DiscountCardView item={item} />;
-            }}
-            onEndReached={handleEndReached}
-            onEndReachedThreshold={0.7}
+        data={data}
+        refreshControl={
+          <RefreshControl
+            refreshing={loading}
+            onRefresh={() => getDiscountOffer2(1)}
           />
+        }
+        ListEmptyComponent={emptyView}
+        ListFooterComponent={lisFooterView}
+        keyExtractor={(item, index) => index}
+        contentContainerStyle={{paddingBottom: windowHeight * 0.2}}
+        renderItem={({item}) => {
+          return <DiscountCardView item={item} />;
+        }}
+        onEndReached={handleEndReached}
+        onEndReachedThreshold={0.7}
+      />
     </View>
   );
 }
@@ -176,14 +248,23 @@ const styles = StyleSheet.create({
     width: windowWidth,
     alignItems: 'center',
     justifyContent: 'center',
+    borderBottomColor: 'gray',
+    borderBottomWidth: 1,
   },
   HeaderText: {
-    fontSize: 35,
+    fontSize: size.Xlarge(),
     color: 'white',
+    textShadowColor: 'black',
+    textShadowOffset: {width: 0, height: 0},
+    textShadowRadius: 5,
   },
   subHeadertext: {
-    fontSize: 20,
+    fontSize: size.small(),
     color: 'white',
+    paddingHorizontal: 2,
+    textShadowColor: 'black',
+    textShadowOffset: {width: 0, height: 0},
+    // textShadowRadius: 5,
   },
   DiscountCardView: {
     height: windowHeight * 0.2,
@@ -193,7 +274,7 @@ const styles = StyleSheet.create({
 
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginVertical: windowHeight*0.005,
+    marginVertical: windowHeight * 0.005,
   },
 
   Coloumn1: {
@@ -223,9 +304,12 @@ const styles = StyleSheet.create({
     // backgroundColor: 'yellow',
   },
   RestaurantNameText: {
-    fontSize: 20,
+    fontSize: size.medium(),
     fontWeight: 'bold',
     color: 'white',
+    textShadowColor: 'black',
+    textShadowOffset: {width: 0, height: 0},
+    textShadowRadius: 10,
     borderBottomWidth: 1,
     borderBottomColor: 'white',
   },
@@ -238,13 +322,16 @@ const styles = StyleSheet.create({
   },
   ColorFont: {
     color: '#00BBB4',
-    fontSize: 11,
+    textShadowColor: 'black',
+    textShadowOffset: {width: 0, height: 0},
+    textShadowRadius: 10,
+    fontSize: size.Xsmall(),
     width: '100%',
     textAlign: 'center',
   },
   ColorFont1: {
     color: '#00BBB4',
-    fontSize: 11,
+    fontSize: size.Xsmall(),
     borderRightWidth: 1,
     borderRightColor: '#00BBB4',
     width: '100%',
@@ -252,6 +339,9 @@ const styles = StyleSheet.create({
   },
   numberFont: {
     color: 'white',
-    fontSize: 10,
+    textShadowColor: 'black',
+    textShadowOffset: {width: 0, height: 0},
+    textShadowRadius: 10,
+    fontSize: size.Xsmall(),
   },
 });

@@ -1,13 +1,15 @@
 import React from 'react';
 import {Text, TouchableOpacity, StyleSheet, View} from 'react-native';
-
+import * as  size from './FontSize';
 function Button({width, height, title, handleSignup}) {
   return (
     // <View>
       <TouchableOpacity
         style={{
-          width: width,
-          height: height,
+          // width: width,
+          // height: height,
+          paddingVertical:10,
+          paddingHorizontal:20,
         backgroundColor: '#00BBB4',
         borderRadius: 10,
           justifyContent:'center'
@@ -23,7 +25,7 @@ function Button({width, height, title, handleSignup}) {
 
 var styles = StyleSheet.create({
   buttonText: {
-    fontSize: 18,
+    fontSize: size.medium(),
     textAlign: 'center',
     color: '#ffffff',
     backgroundColor: 'transparent',

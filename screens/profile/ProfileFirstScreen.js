@@ -9,7 +9,23 @@ import {
   ActivityIndicator,
   Alert,
 } from 'react-native';
+import {Platform} from 'react-native';
+import {RefreshControl} from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import {axiosGet} from '../../axios/axios';
+// import RNAndroidNotificationPermission from 'react-native-android-notification-permission';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import {useCallback} from 'react';
+import {
+  request,
+  check,
+  PERMISSIONS,
+  RESULTS,
+  requestNotifications,
+} from 'react-native-permissions';
 import React from 'react';
+import { messagetoast,errortoast } from '../../Toast';
+import { useToast } from 'react-native-toast-notifications';
 import {Dimensions} from 'react-native';
 import {useEffect, useState} from 'react';
 import {useFocusEffect} from '@react-navigation/native';
@@ -19,10 +35,13 @@ import {useContext} from 'react';
 import AppContext from '../../components/AppContext';
 import jwtDecode from 'jwt-decode';
 import axios from 'axios';
+import * as size from '../../components/FontSize';
 import {launchImageLibrary} from 'react-native-image-picker';
 export default function ProfileFirstScreen(props) {
   const [Imgdata, setImgdata] = useState([]);
   const [loading, setloading] = useState(true);
+  const [Name, setName] = useState('');
+  const [profileImage, setprofileImage] = useState(null);
 
   const GetProfilePic = async () => {
     try {
@@ -33,25 +52,69 @@ export default function ProfileFirstScreen(props) {
     }
   };
 
+  const  toast= useToast()
+  const showMessage = message => {
+    toast.show(message, messagetoast(message));
+  };
+  const showError = message => {
+    toast.show(message, errortoast(message));
+  };
+
   const emptyList = () => {
+    const [loadingPics, setloadingPics] = useState(true);
+
+    useEffect(() => {
+      const timer = setTimeout(() => {
+        console.log('Hello, World!');
+        setloadingPics(false);
+      }, 3000);
+    }, []);
+
+    if (loadingPics == true) {
+      return (
+        <View
+          style={{
+            height: windowHeight * 0.6,
+            width: windowWidth,
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}>
+          <ActivityIndicator size={30} color={'#00BBB4'} />
+        </View>
+      );
+    }
     return (
       <View
         style={{
           height: windowHeight * 0.6,
           width: windowWidth,
           alignItems: 'center',
-          justifyContent: 'center',
+          // justifyContent: 'center',
+          // marginTop: windowHeight * 0.1,
           // backgroundColor: 'red',
         }}>
         {/* <Text style={{fontSize: 15, color: 'gray'}}>No pictures uploaded yet</Text> */}
-        <Text style={{fontSize: 12, color: 'gray'}}>Scan QR code to add pictures.</Text>
-
+        <Image
+          style={{width: windowWidth * 0.3, height: windowHeight * 0.25}}
+          resizeMode={'contain'}
+          source={require('../../assets/chaakLogo.png')}
+        />
+        <Text
+          style={{
+            fontSize: size.medium(),
+            color: 'gray',
+            marginHorizontal: 8,
+            textAlign: 'center',
+          }}>
+          Scan QR code on the Kachaak! Photo Booth to add your photos here for
+          remembrance {'(and earn CHAAK$ each time you do so)'}.
+        </Text>
       </View>
     );
   };
 
   const FlatListImageView = prop => {
-    console.log('item', prop.index);
+    // console.log('item', prop.index);
     return (
       <TouchableOpacity
         onPress={() =>
@@ -72,12 +135,30 @@ export default function ProfileFirstScreen(props) {
   };
 
   const {userToken} = useContext(AppContext);
-  const getuserID = token => {
+
+  const getUserToken = async () => {
     try {
-      const decodedToken = jwtDecode(token);
+      const savedToken = await AsyncStorage.getItem('LoginToken');
+
+      // console.log('savedTokenxxxxxxxx', savedToken);
+
+      if (savedToken != null) {
+        return savedToken;
+      } else {
+        return null;
+      }
+    } catch (err) {
+      console.log('getUserTokenError', err);
+      return null;
+    }
+  };
+
+  const getuserID = async token => {
+    try {
+      const decodedToken = await jwtDecode(token);
       return decodedToken.id;
     } catch (error) {
-      console.log('Error decoding token:', error);
+      // console.log('Error decoding token:', error);
       return null;
     }
   };
@@ -85,40 +166,71 @@ export default function ProfileFirstScreen(props) {
   const getImages = async () => {
     try {
       setloading(true);
-      console.log('called getImages');
-      const token = userToken;
-      const userID = getuserID(userToken);
+      // console.log('called getImages');
+      const Token = await getUserToken();
+      const userID = await getuserID(Token);
       // console.log('first', userToken,userID)
       const urlToHit = 'https://api.kachaak.com.sg/api/albums/' + userID;
-      const config = {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      };
-      const response = await axios.get(urlToHit, config);
+
+      // const response = await axios.get(urlToHit, config);
+      const response = await axiosGet(urlToHit);
+
       const responseData = response.data;
-      console.log('responseData', responseData.data.length);
+      // console.log('responseDataxxxxxxxxxxxx', responseData.data.length);
       if (response?.data != undefined) {
         setImgdata(responseData.data);
-        console.log('imagedata', Imgdata[0]);
+        // console.log('imagedata', response);
       } else {
-        Alert.alert('error loading profile');
+        showError('error loading profile');
         props.navigation.goBack();
       }
       setloading(false);
     } catch (e) {
       console.log('e', e);
-      Alert.alert('error:', e);
+     showError('error:', e);
       setloading(false);
       props.navigation.goBack();
     }
   };
 
-  useFocusEffect(
-    React.useCallback(() => {
-      // This function will be called when the screen comes into focus
+  const checkUserDetails = async () => {
+    try {
+      setloading(true);
+      const urlToHit = 'https://api.kachaak.com.sg/api/users/profile';
+      const response = await axiosGet(urlToHit);
+      // console.log('responseCheckUserDetails===>', response.data.data);
 
+      if (response.data.data != undefined) {
+        const res = response.data.data;
+        // console.log('res.Img.dddd', res.profileImage);
+        // setprofileExists(true);
+        setName(res?.name);
+        // setUserName(res.profileName);
+        setprofileImage(res?.profileImage);
+        // setfoodItems(res.favouriteFoods);
+        // setAge(res.age);
+        // setAgeText(res.age);
+        // setGender(res.gender);
+        // setgenderText(res.gender);
+        // setIndustry(res.industry);
+        // setIndustryText(res.industry);
+        // setAddress(res.address);
+      }
+
+      setloading(false);
+    } catch (error) {
+      console.log('errorCheckUserDetails', error.response.data);
+      if (error.response.data.error == 'Profile not exists') {
+        console.log('setprofileExists set to false');
+        setloading(false);
+      }
+    }
+  };
+  useFocusEffect(
+    useCallback(() => {
+      // This function will be called when the screen comes into focus
       getImages();
+      checkUserDetails();
       return () => {
         // This function will be called when the screen loses focus
         // You can perform any cleanup logic here
@@ -136,7 +248,7 @@ export default function ProfileFirstScreen(props) {
           justifyContent: 'center',
           alignItems: 'center',
         }}>
-        <ActivityIndicator size={100} color={'525461'} />
+        <ActivityIndicator size={50} color={'525461'} />
       </ImageBackground>
     );
   } else {
@@ -145,50 +257,112 @@ export default function ProfileFirstScreen(props) {
         source={require('../../assets/linearbg.png')}
         style={{height: windowHeight, width: windowWidth}}>
         <View style={styles.profileInfoContainer}>
-          <View style={styles.InfoContainer}>
-            <View
+          <View style={{width: windowWidth / 3}}></View>
+          <View style={{width: windowWidth / 3, justifyContent: 'center'}}>
+            <Text
               style={{
-                height: windowWidth * 0.3,
-                width: windowWidth * 0.3,
-                borderRadius: (windowWidth * 0.3) / 2,
-                backgroundColor: 'white',
-                marginLeft: windowWidth * 0.35,
-                alignItems: 'center',
-                justifyContent: 'center',
+                color: 'white',
+                fontSize: size.large(),
+                fontWeight: 'bold',
+                color: '#ffffff',
+                textShadowColor: 'black',
+                alignSelf: 'center',
+                textShadowOffset: {width: 0, height: 0},
+                textShadowRadius: 10,
+                // marginBottom: 10,
               }}>
-              <TouchableOpacity onPress={GetProfilePic}>
-                <Image
-                  source={{
-                    uri: 'https://preview.keenthemes.com/metronic-v4/theme/assets/pages/media/profile/people19.png',
-                  }}
-                  style={styles.profilePicContainer}
-                />
-              </TouchableOpacity>
-            </View>
-            <View
-              style={{
-                marginLeft: windowWidth * 0.3,
-                width: windowWidth * 0.4,
-                alignItems: 'center',
-                marginTop: 10,
-              }}>
-              <Text style={{color: 'white'}}>RandomUser</Text>
-            </View>
+              Albums
+            </Text>
           </View>
-          <View style={styles.settingsContainer}>
+          <View style={{width: windowWidth / 3, justifyContent: 'center'}}>
             <TouchableOpacity
-              onPress={() => props.navigation.navigate('ProfileSettings')}>
-              <Image
-                style={styles.settingsLogoCont}
-                source={require('../../assets/settingLogo.png')}
-              />
+              style={{alignSelf: 'flex-end', marginRight: 10}}
+              onPress={() => props.navigation.navigate('EditProfile')}>
+              <MaterialIcons name={'settings'} size={35} color="#00BBB4" />
             </TouchableOpacity>
           </View>
+        </View>
+        <View
+          style={{
+            height: windowWidth * 0.3,
+            width: windowWidth * 0.3,
+            borderRadius: (windowWidth * 0.3) / 2,
+            backgroundColor: 'white',
+            // marginLeft: windowWidth * 0.35,
+            alignSelf: 'center',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}>
+          <TouchableOpacity
+            onPress={() => props.navigation.navigate('EditProfile')}>
+            <View>
+              <Image
+                source={{
+                  uri:
+                    profileImage != null
+                      ? profileImage
+                      : 'https://e7.pngegg.com/pngimages/753/432/png-clipart-user-profile-2018-in-sight-user-conference-expo-business-default-business-angle-service-thumbnail.png',
+                }}
+                style={styles.profilePicContainer}
+              />
+              <View
+                style={{
+                  width: '100%',
+                  // backgroundColor: 'green',
+                  position: 'absolute',
+                  height: windowWidth * 0.29,
+                  alignItems: 'flex-end',
+                  justifyContent: 'flex-end',
+                }}>
+                <View
+                  style={{
+                    backgroundColor: '#00BBB4',
+                    width: 30,
+                    height: 30,
+                    borderRadius: 15,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}>
+                  <Text style={{color: 'white', fontSize: 20}}>+</Text>
+                </View>
+              </View>
+            </View>
+          </TouchableOpacity>
+        </View>
+        <View
+          style={{
+            alignSelf: 'center',
+            // marginLeft: windowWidth * 0.3,
+            // backgroundColor:'red',
+            width: windowWidth * 0.4,
+            alignItems: 'center',
+            marginTop: 3,
+          }}>
+          <Text
+            style={{
+              color: 'white',
+              fontSize: size.medium(),
+              color: '#ffffff',
+              textShadowColor: 'black',
+              textShadowOffset: {width: 0, height: 0},
+              textShadowRadius: 10,
+            }}>
+            {Name}
+          </Text>
         </View>
         <View style={styles.profileFlatlistContainer}>
           <FlatList
             data={Imgdata}
             numColumns={3}
+            refreshControl={
+              <RefreshControl
+                refreshing={loading}
+                onRefresh={() => {
+                  getImages();
+                  checkUserDetails();
+                }}
+              />
+            }
             ListEmptyComponent={emptyList}
             contentContainerStyle={{paddingBottom: windowHeight * 0.01}}
             keyExtractor={(item, index) => item.id}
@@ -204,15 +378,19 @@ export default function ProfileFirstScreen(props) {
 
 const styles = StyleSheet.create({
   profileInfoContainer: {
-    height: windowHeight * 0.25,
+    height: windowHeight * 0.08,
     width: windowWidth,
     flexDirection: 'row',
+    // alignItems:'center',
+    // justifyContent:'center',
     // backgroundColor: 'red',
+    paddingBottom: 10,
   },
   profileFlatlistContainer: {
-    borderTopColor:'gray',
-    borderTopWidth:0.2,
-    height: windowHeight * 0.65,
+    marginTop: 10,
+    borderTopColor: '#00BBB4',
+    borderTopWidth: 0.2,
+    height: windowHeight * 0.55,
     width: windowWidth,
     // backgroundColor: 'green',
     justifyContent: 'center',
@@ -221,27 +399,33 @@ const styles = StyleSheet.create({
   flatListImageCont: {
     height: windowHeight * 0.1625,
     width: windowWidth * 0.33,
-    backgroundColor: 'grey',
-    borderWidth: 1,
-    borderColor: 'white',
+    backgroundColor: 'white',
+    // borderWidth: 1,
+    // borderRadius: 3,
+    overflow: 'hidden',
+    borderColor: 'gray',
     justifyContent: 'center',
     alignItems: 'center',
   },
   InfoContainer: {
-    height: '100%',
-    // backgroundColor: 'red',
+    // height: '100%',
+    height: windowHeight * 0.1,
+    backgroundColor: 'orange',
     width: '80%',
     justifyContent: 'center',
+    // justifyContent: 'space-evenly',
   },
   settingsContainer: {
     height: '100%',
     width: '20%',
     // backgroundColor: 'green',
-    justifyContent: 'flex-start',
+    paddingTop: 10,
+    paddingRight: 5,
+    justifyContent: 'flex-end',
     alignItems: 'flex-end',
   },
   settingsLogoCont: {
-    height: windowHeight * 0.05,
+    // height: windowHeight * 0.05,
     width: windowWidth * 0.07,
     margin: 10,
     resizeMode: 'contain',
@@ -252,6 +436,6 @@ const styles = StyleSheet.create({
     borderRadius: (windowWidth * 0.29) / 2,
 
     backgroundColor: 'grey',
-    resizeMode: 'stretch',
+    resizeMode: 'cover',
   },
 });

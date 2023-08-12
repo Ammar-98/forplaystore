@@ -1,7 +1,7 @@
 import React from 'react'
-import { View,Text } from 'react-native'
+import { View,Text,StyleSheet } from 'react-native'
 import CheckBox from '@react-native-community/checkbox';
-function CheckBox({}) {
+ export function CheckBoxx({}) {
   return (
     <View>
       <View style={styles.checkboxWrapper}>

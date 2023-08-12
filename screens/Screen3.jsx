@@ -3,7 +3,7 @@ import {ImageBackground, Image, View, StyleSheet} from 'react-native';
 function Screen3({navigation}) {
   useEffect(() => {
     setTimeout(() => {
-      navigation.navigate('LoginScreen');
+      navigation.reset({index:0,routes:[{name:'LoginScreen'}]});
     }, 2000);
   }, []);
   return (

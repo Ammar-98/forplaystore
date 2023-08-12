@@ -12,6 +12,8 @@
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import {Provider} from 'react-redux';
 import jwtDecode from 'jwt-decode';
+import Toast from "react-native-toast-notifications";
+import { ToastProvider } from 'react-native-toast-notifications'
 import { Alert } from 'react-native';
 import store from './store';
 import AppNavigation from './navigations/index';
@@ -76,7 +78,10 @@ function App() {
   // };
   useEffect(() => {
     const unsubscribe = messaging().onMessage(async remoteMessage => {
-      Alert.alert('A new FCM message arrived in foreground!', JSON.stringify(remoteMessage));
+      Alert.alert(JSON.stringify(remoteMessage.notification.title), String(JSON.stringify(remoteMessage.notification.body)));
+    
+     
+    
     });
 
     return unsubscribe;
@@ -93,7 +98,10 @@ function App() {
 
   return (
     <Provider store={store}>
+      <ToastProvider>
       <AppNavigation />
+      </ToastProvider>
+      {/* <Toast ref={(ref) => global['toast'] = ref} /> */}
     </Provider>
 
     // <Provider store={store}>
