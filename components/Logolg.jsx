@@ -7,7 +7,7 @@ function Logolg({width, height}) {
       <Image
         style={[
           styles.logo,
-          {width: width, height: height,},
+          {width: width, height: height},
         ]}
         resizeMode="contain"
         source={require('../assets/chaakLogo.png')}

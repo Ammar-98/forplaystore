@@ -8,6 +8,8 @@ import {
   TouchableOpacity,
   Image,
   ScrollView,
+  Platform,
+  ActivityIndicator,
 } from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 
@@ -41,17 +43,20 @@ const LocateUs = () => {
   const [CentralData, setCentralData] = useState([]);
   const [NorthEastData, setNorthEastData] = useState([]);
   const [NorthWestData, setNorthWestData] = useState([]);
-
+  const [loading, setloading] = useState(true);
   const getLocations = async () => {
     try {
+      setloading(true);
       const urlToHit = 'https://api.kachaak.com.sg/api/brands/locations';
       const response = await axiosGet(urlToHit);
       console.log('responsegetLocation==>', response.data.data);
       // console.log('response.length', response.data.data.length)
       splitData(response.data.data);
+      setloading(false);
     } catch (error) {
       console.log('error', error);
       Alert.alert(error?.response?.data);
+      setloading(false);
     }
   };
 
@@ -109,7 +114,7 @@ const LocateUs = () => {
         <TouchableOpacity
           // style={{width: '12%', alignItems: 'center'}}
           onPress={() => {
-            setdropView(!dropView), handleScrollUp();
+            setdropView(!dropView);
           }}>
           <View style={styles.dropdownView}>
             <View
@@ -130,8 +135,7 @@ const LocateUs = () => {
               </Text>
             </View>
 
-            <View
-              style={{height: '100%', justifyContent: 'center'}}>
+            <View style={{height: '100%', justifyContent: 'center'}}>
               <MaterialIcons
                 name={dropView == false ? 'arrow-drop-down' : 'arrow-drop-up'}
                 style={{
@@ -169,7 +173,13 @@ const LocateUs = () => {
               }}
               nestedScrollEnabled>
               {props.value.length < 1 ? (
-                <View style={{width: '100%', alignItems: 'center',height:windowHeight*0.09,justifyContent:'center'}}>
+                <View
+                  style={{
+                    width: '100%',
+                    alignItems: 'center',
+                    height: windowHeight * 0.09,
+                    justifyContent: 'center',
+                  }}>
                   <Text
                     style={{
                       // marginTop: 3,
@@ -180,7 +190,7 @@ const LocateUs = () => {
                       // borderBottomColor:'#ECF9FF',
                       // borderTopWidth:0.1
                     }}>
-                    Coming Soon!
+                    No photoBooths registered in your area yet.Coming Soon!
                   </Text>
                 </View>
               ) : (
@@ -236,48 +246,66 @@ const LocateUs = () => {
   const [centralName, setCentralName] = useState(null);
 
   const [isFocus, setIsFocus] = useState(false);
-  return (
-    <ImageBackground
-      source={require('../../assets/linearbg.png')}
-      style={{flex: 1}}>
-      <ScrollView
-        ref={scrollViewRef}
-        contentContainerStyle={{paddingBottom: windowHeight * 0.2}}>
-        <View style={{alignItems: 'center'}}>
-          <Text
-            style={{
-              fontSize: size.Xlarge(),
-              color: 'white',
-              marginTop: 30,
-              textShadowColor: 'black',
-              textShadowOffset: {width: 0, height: 1},
-              textShadowRadius: 5,
-            }}>
-            Don’t stop earning
-          </Text>
-          <Text
-            style={{
-              fontSize: size.medium(),
-              color: 'white',
-              marginTop: 20,
-              width: '70%',
-              textAlign: 'center',
-            }}>
-            Locate other KACHAAK! Booths at these locations
-          </Text>
-          <View style={{width: '100%', marginTop: 20, alignItems: 'center'}}>
-            <DropdownView text={'East'} value={EastData} />
-            <DropdownView text={'West'} value={WestData} />
-            <DropdownView text={'North'} value={NorthData} />
-            <DropdownView text={'South'} value={SouthData} />
-            <DropdownView text={'Central'} value={CentralData} />
-            <DropdownView text={'North-East'} value={NorthEastData} />
-            <DropdownView text={'North-West'} value={NorthWestData} />
+  if (loading == true) {
+    return (
+      <ImageBackground
+        source={require('../../assets/linearbg.png')}
+        style={{
+          flex: 1,
+          alignItems:'center',
+          justifyContent:'center',
+          paddingTop: Platform.OS == 'ios' ? windowHeight * 0.07 : 0,
+        }}>
+        <ActivityIndicator size={30} color={'#00BBB4'} />
+      </ImageBackground>
+    );
+  } else {
+    return (
+      <ImageBackground
+        source={require('../../assets/linearbg.png')}
+        style={{
+          flex: 1,
+          paddingTop: Platform.OS == 'ios' ? windowHeight * 0.07 : 0,
+        }}>
+        <ScrollView
+          ref={scrollViewRef}
+          contentContainerStyle={{paddingBottom: windowHeight * 0.2}}>
+          <View style={{alignItems: 'center'}}>
+            <Text
+              style={{
+                fontSize: size.Xlarge(),
+                color: 'white',
+                marginTop: 30,
+                textShadowColor: 'black',
+                textShadowOffset: {width: 0, height: 1},
+                textShadowRadius: 5,
+              }}>
+              Don’t stop earning
+            </Text>
+            <Text
+              style={{
+                fontSize: size.medium(),
+                color: 'white',
+                marginTop: 20,
+                width: '70%',
+                textAlign: 'center',
+              }}>
+              Locate other KACHAAK! Booths at these locations
+            </Text>
+            <View style={{width: '100%', marginTop: 20, alignItems: 'center'}}>
+              <DropdownView text={'East'} value={EastData} />
+              <DropdownView text={'West'} value={WestData} />
+              <DropdownView text={'North'} value={NorthData} />
+              <DropdownView text={'South'} value={SouthData} />
+              <DropdownView text={'Central'} value={CentralData} />
+              <DropdownView text={'North-East'} value={NorthEastData} />
+              <DropdownView text={'North-West'} value={NorthWestData} />
+            </View>
           </View>
-        </View>
-      </ScrollView>
-    </ImageBackground>
-  );
+        </ScrollView>
+      </ImageBackground>
+    );
+  }
 };
 
 const styles = StyleSheet.create({

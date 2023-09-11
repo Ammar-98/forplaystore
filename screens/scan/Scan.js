@@ -322,7 +322,7 @@ export default function Scan(props) {
           frameProcessor={frameProcessor}
           // video={true}
           frameProcessorFps={
-            isFocused && !checkingQR && !capturingreceipt ? 2 : 0
+            isFocused && !checkingQR && !capturingreceipt ? 1 : 0.0000001
           }
         />
         {loading ? (

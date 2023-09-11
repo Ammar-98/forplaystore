@@ -20,8 +20,36 @@
 	<string>$(MARKETING_VERSION)</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>fb6830656726979722</string>
+			</array>
+		</dict>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.googleusercontent.apps.568493759154-jgqncegfgpaklcpqgfi4fem0s5s1s9t0</string>
+			</array>
+		</dict>
+	</array>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<key>FacebookAppID</key>
+	<string>6830656726979722</string>
+	<key>FacebookClientToken</key>
+	<string>d2fb8ef8f26eedc924bd8c257b0c1e15</string>
+	<key>FacebookDisplayName</key>
+	<string>Chaak</string>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>fbapi</string>
+		<string>fb-messenger-share-api</string>
+	</array>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSAppTransportSecurity</key>
@@ -35,13 +63,34 @@
 			</dict>
 		</dict>
 	</dict>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+<string>Chaak needs permission to write photos.</string>
+	<key>NSBluetoothAlwaysUsageDescription</key>
+<string>Need access to Bluetooth</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+<string>Need access to location</string>
+	<key>NSSiriUsageDescription</key>
+<string>Need access to Siri</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+<string>Need access to Speech recognition</string>
+	<key>NSMotionUsageDescription</key>
+<string>Need access to Motion Usage</string>
+	<key>NSAppleMusicUsageDescription</key>
+<string>Need access to AppleMusic</string>
+	<key>NSMicrophoneUsageDescription</key>
+<string>Need microphone access for uploading audio</string>
+	<key>NSBluetoothPeripheralUsageDescription</key>
+<string>Chaak needs access to your Bluetooth.</string>
+	<key>NSContactsUsageDescription</key>
+	<string>Chaak needs access to your Contacts.</string>
 	<key>NSCameraUsageDescription</key>
-	<string>Chaak needs access to your Camera.</string>
-	<key>NSPhotoLibraryUsageDescription</key>
-  <string>Chaak wants to access your Gallery.</string>
+	<string>Chaak needs access to your Camera to scan QR code.</string>
+	<key>NSCalendarsUsageDescription</key>
+<string>Chaak would like to access your calender</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string></string>
-	 
+	<string>Chaak needs access to your Location</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Chaak wants to access your Gallery.</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>Zocial.ttf</string>
@@ -80,5 +129,7 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
+	<key>FirebaseAppDelegateProxyEnabled</key>
+	<true/>
 </dict>
 </plist>

@@ -1,4 +1,4 @@
-import {StyleSheet, Text, View} from 'react-native';
+import {Platform, StyleSheet, Text, View} from 'react-native';
 import React from 'react';
 import {ImageBackground} from 'react-native';
 import {useState} from 'react';
@@ -105,7 +105,8 @@ export default function JobDescription(props) {
     <ImageBackground
       source={require('../../assets/linearbg.png')}
       style={{flex: 1}}>
-      <ScrollView contentContainerStyle={{width: windowWidth}}>
+        <View style={{ marginTop:Platform.OS=='ios'?windowHeight * 0.07: 0,}}>
+      <ScrollView contentContainerStyle={{width: windowWidth,}}>
         <View style={styles.titleContaier}>
           <Text style={styles.title}>{data.title}</Text>
 
@@ -234,6 +235,7 @@ export default function JobDescription(props) {
           </TouchableOpacity>
         </View> */}
       </ScrollView>
+      </View>
     </ImageBackground>
   );
 }
@@ -244,7 +246,8 @@ const styles = StyleSheet.create({
     // paddingTop: windowHeight * 0.05,
     width: '100%',
     // backgroundColor: 'red',
-    paddingTop: windowHeight * 0.03,
+    paddingTop:windowHeight * 0.03,
+   
     // paddingLeft: windowWidth * 0.03,
     paddingBottom: 5,
     justifyContent: 'center',

@@ -3,6 +3,8 @@ import React from 'react'
 import LinearGradient from 'react-native-linear-gradient';
 import * as size from '../components/FontSize';
 import { ScrollView } from 'react-native';
+import { Dimensions } from 'react-native';
+const windowHeight=Dimensions.get('window').height
 export default function TandA() {
   return (
     <LinearGradient
@@ -15,8 +17,8 @@ export default function TandA() {
       '#1B1D2A',
     ]}
     style={{flex: 1,padding:5}}>
-      <ScrollView>
-      <Text style={{color:'white',fontSize:size.medium()}}>DATA PROTECTION NOTICE{`\n`}  {`\n`} 
+      <ScrollView contentContainerStyle={{paddingTop:Platform.OS=='ios'?windowHeight*0.1:0}}>
+      <Text style={{color:'white',fontSize:17}}>DATA PROTECTION NOTICE{`\n`}  {`\n`} 
 
 This Data Protection Notice (“Notice”) sets out the basis which BMG Engage International Pte. Ltd., a limited liability company established under the laws of the Republic of Singapore, having its registered office at 28 Surrey Road #15-02, Singapore 307762 (hereinafter referred as “BMG Engage”, “we“ or “us“, or “our”) may collect, use, disclose or otherwise process personal data of our customers and users of Chaak, including Chaak applications (“Apps”) and www.chaak.com.sg (“Website”) (collectively the “Services”), and in accordance with the Personal Data Protection Act (“PDPA”). This Notice applies to personal data in our possession or under our control, including personal data in the possession of organisations which we have engaged to collect, use, disclose or process personal data for our purposes.{`\n`}  
 {`\n`}

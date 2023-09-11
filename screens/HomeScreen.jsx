@@ -65,8 +65,19 @@ function HomeScreen({navigation}) {
       // Request notification permission
       if(Platform.OS=='ios')
       {
-        const result = await requestNotifications(['alert','sound']);
-      console.log('Permission result', result); // Log the result
+        const authstatus=await messaging().requestPermission()
+        const enabled=
+       authstatus=== messaging.AuthorizationStatus.AUTHORIZED||
+        authstatus===messaging.AuthorizationStatus.PROVISIONAL
+        if(enabled)
+        {
+          console.log('Authorization status', authstatus)
+        
+        }
+        console.log('authstatus====>>', authstatus)
+      //   const result = await requestNotifications(['alert','sound']);
+      // console.log('Permission result', result); // Log the result
+
 
       }
       if(Platform.OS=='android')
@@ -116,9 +127,10 @@ function HomeScreen({navigation}) {
 
       // await axios.post('http://192.168.28.232:3000/register', {token});
       sendFmcTokenApi(token);
+
     } catch (err) {
       //Do nothing
-      console.log(err.response.data);
+      console.log('FCM Erro');
       return;
     }
   };

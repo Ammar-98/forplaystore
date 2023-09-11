@@ -16,6 +16,7 @@ import axios from 'axios';
 import {axiosGet} from '../../axios/axios';
 import AppContext from '../../components/AppContext';
 import {RefreshControl} from 'react-native';
+import { Platform } from 'react-native';
 // import ButtonGradient from '../components/ButtonGradient'
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 
@@ -124,6 +125,7 @@ function WalletFirstScreen(props) {
           alignItems: 'center',
           backgroundColor: '#00BBB4',
           height: Wheight * 0.9,
+          paddingTop:Platform.OS=='ios'?Wheight*0.1:0
         }}>
         {/* <Image
           source={require('../../assets/dollar.png')}

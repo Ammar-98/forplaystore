@@ -191,7 +191,7 @@ export default function ChangePassword(props) {
               Update
             </Text>
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => handleCancel()}>
+          {/* <TouchableOpacity onPress={() => handleCancel()}>
             <Text
               style={{
                 color: 'white',
@@ -206,7 +206,7 @@ export default function ChangePassword(props) {
               }}>
               Cancel
             </Text>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </View>
       </LinearGradient>
     </View>

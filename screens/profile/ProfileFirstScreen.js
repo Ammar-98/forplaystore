@@ -385,12 +385,15 @@ const styles = StyleSheet.create({
     // justifyContent:'center',
     // backgroundColor: 'red',
     paddingBottom: 10,
+    marginTop:Platform.OS=='ios'? windowHeight*0.05:0
+    
+    
   },
   profileFlatlistContainer: {
     marginTop: 10,
     borderTopColor: '#00BBB4',
     borderTopWidth: 0.2,
-    height: windowHeight * 0.55,
+    height:Platform.OS=='ios'?windowHeight * 0.59: windowHeight * 0.55,
     width: windowWidth,
     // backgroundColor: 'green',
     justifyContent: 'center',

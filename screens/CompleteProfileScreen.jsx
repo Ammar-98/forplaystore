@@ -11,6 +11,7 @@ import {
   ActivityIndicator,
   Keyboard,
   FlatList,
+  Platform,
 } from 'react-native';
 import {useFocusEffect} from '@react-navigation/native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
@@ -33,8 +34,9 @@ import * as size from '../components/FontSize';
 import {useDispatch} from 'react-redux';
 import {authSlice} from '../store/authSlice';
 import {useSelector} from 'react-redux';
-import { useToast } from 'react-native-toast-notifications';
-
+import {useToast} from 'react-native-toast-notifications';
+import { errortoast } from '../Toast';
+import { messagetoast } from '../Toast';
 const windowHeight = Dimensions.get('window').height;
 const windowWidth = Dimensions.get('window').width;
 
@@ -42,15 +44,13 @@ export default function CompleteProfileScreen(props) {
   const dispatch = useDispatch();
   const actions = authSlice.actions;
 
-  const  toast= useToast()
+  const toast = useToast();
   const showMessage = message => {
     toast.show(message, messagetoast(message));
   };
   const showError = message => {
     toast.show(message, errortoast(message));
   };
-
-
 
   useFocusEffect(
     React.useCallback(() => {
@@ -73,14 +73,15 @@ export default function CompleteProfileScreen(props) {
   const scrollViewRef2 = useRef(null);
   const flatlistref = useRef(null);
   const handleScrollUp = () => {
-    const scrollAmount = windowHeight * 0.37;
-
+    const scrollAmount = Platform.OS == 'ios' ? 0 : windowHeight * 0.27;
+    console.log('scrolled');
     // Scroll the ScrollView up
     scrollViewRef.current?.scrollTo({y: scrollAmount, animated: true});
   };
   const handleScrollUp2 = index => {
     if (index > 25) {
-      const scrollAmount = index * windowHeight * 0.1;
+      const scrollAmount =
+        Platform.OS == 'ios' ? 0 : index * windowHeight * 0.1;
 
       // Scroll the ScrollView up
       scrollViewRef2.current?.scrollTo({y: scrollAmount, animated: true});
@@ -527,7 +528,7 @@ export default function CompleteProfileScreen(props) {
       console.log('error', error.response.data);
       setuploading(false);
 
-     showErrort('Error uploading profile pic');
+      showError('Error uploading profile pic');
     }
   };
 
@@ -539,7 +540,8 @@ export default function CompleteProfileScreen(props) {
         // setprofileImage(pic?.assets[0]?.uri);
         UploadImage(pic?.assets[0]?.uri);
       } else {
-       showError('Name field  cannot be empty');
+        showError('Name field  cannot be empty');
+        // Alert.alert('Name field  cannot be empty')
       }
     } catch (e) {
       console.log('e', e);
@@ -1203,24 +1205,38 @@ export default function CompleteProfileScreen(props) {
 
   const DropdownView4 = props => {
     const [dropView, setdropView] = useState(false);
+    const [fooods, setfooods] = useState(props.Fooditems);
 
-    const handleOnpress = async number => {
-      props.setselected(number);
-      props.setText(number);
+    const handleRemove = itemToRemove => {
+      setfooods(prevItems => prevItems.filter(item => item !== itemToRemove));
     };
+
+    const handlePress = item => {
+      console.log('item', item);
+      const isItemExists = fooods.includes(item);
+      if (!isItemExists) {
+        setfooods(prevItems => [...prevItems, item]);
+      } else {
+        // Item already exists, show a message or perform other actions as needed
+        console.log('Item already exists:', item);
+      }
+    };
+
     return (
       <View>
         <View style={styles.dropdownView}>
-          {foodItems.length == 0 ? (
-            <Text
-              style={{
-                color: 'white',
-                textShadowColor: 'gray',
-                textShadowOffset: {width: 0, height: 0},
-                textShadowRadius: 5,
-              }}>
-              {props.text}
-            </Text>
+          {props.Fooditems.length == 0 ? (
+            <View style={{height: '100%', justifyContent: 'center'}}>
+              <Text
+                style={{
+                  color: 'white',
+                  textShadowColor: 'gray',
+                  textShadowOffset: {width: 0, height: 0},
+                  textShadowRadius: 5,
+                }}>
+                {props.text}
+              </Text>
+            </View>
           ) : (
             <View
               style={{
@@ -1228,16 +1244,19 @@ export default function CompleteProfileScreen(props) {
                 height: windowHeight * 0.05,
                 // backgroundColor: 'white',
                 alignItems: 'center',
-                width: windowWidth * 0.7,
+                width: windowWidth * 0.75,
+                
                 borderRadius: 5,
+                borderRightWidth:1,
+                borderRightColor:'white'
 
                 // marginTop: 10,
 
                 // borderBottomColor:'gray',
                 // borderBottomWidth:1,
               }}>
-              <ScrollView horizontal>
-                {foodItems.map(item => (
+              <ScrollView horizontal nestedScrollEnabled>
+                {props.Fooditems.map(item => (
                   // <TouchableOpacity
                   //   key={item}
                   //   onPress={() => {
@@ -1248,9 +1267,9 @@ export default function CompleteProfileScreen(props) {
                     style={{
                       // backgroundColor: 'orange',
                       borderRadius: 3,
-                      // marginHorizontal: 2,
+                      marginLeft: 2,
                       borderWidth: 1,
-                      borderColor: 'white',
+                      borderColor: '#00a29b',
                       paddingHorizontal: 3,
                     }}>
                     <Text
@@ -1273,6 +1292,7 @@ export default function CompleteProfileScreen(props) {
           <TouchableOpacity
             onPress={() => {
               setdropView(!dropView), handleScrollUp();
+              props.setFooditems(fooods);
             }}>
             <View
               style={{
@@ -1295,62 +1315,95 @@ export default function CompleteProfileScreen(props) {
             </View>
           </TouchableOpacity>
         </View>
+
         {dropView == true ? (
           <View
             style={{
               width: windowWidth * 0.9,
-              maxHeight:
+              height:
                 props.value.length > 0 ? windowHeight * 0.3 : windowWidth * 0.1,
+              // backgroundColor: 'white',
+              borderBottomLeftRadius:10,
+                  borderBottomRightRadius:10
             }}>
-            <ScrollView
-              nestedScrollEnabled
-              showsVerticalScrollIndicator={false}
-              contentContainerStyle={{width: '100%'}}>
-              {props.value.map((number, index) => (
-                <View style={{width: '100%'}} key={index}>
-                  <TouchableOpacity
-                    onPress={() =>
-                      foodItems.includes(number)
-                        ? handleRemove(number)
-                        : handlePress(number)
-                    }>
-                    <View
-                      style={{
-                        width: '100%',
-                        flexDirection: 'row',
-                        justifyContent: 'space-between',
-                        backgroundColor: 'black',
-                      }}>
-                      <Text
+            <View
+              style={{
+                width: windowWidth * 0.9,
+                maxHeight:
+                  props.value.length > 0
+                    ? windowHeight * 0.25
+                    : windowWidth * 0.1,
+              }}>
+              <ScrollView
+                nestedScrollEnabled
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={{width: '100%'}}>
+                {props.value.map((number, index) => (
+                  <View style={{width: '100%'}} key={index}>
+                    <TouchableOpacity
+                      onPress={() =>
+                        fooods.includes(number)
+                          ? handleRemove(number)
+                          : handlePress(number)
+                      }>
+                      <View
                         style={{
+                          width: '100%',
+                          flexDirection: 'row',
+                          justifyContent: 'space-between',
                           backgroundColor: 'black',
-                          marginTop: 3,
-                          paddingLeft: 5,
-                          padding: 5,
-                          color: foodItems.includes(number)
-                            ? '#00BBB4'
-                            : 'white',
-                          textShadowColor: 'gray',
-                          textShadowOffset: {width: 0, height: 0},
-                          textShadowRadius: 5,
                         }}>
-                        {number}
-                      </Text>
-                      {foodItems.includes(number) ? (
-                        <MaterialIcons
-                          name="check"
+                        <Text
                           style={{
+                            backgroundColor: 'black',
                             marginTop: 3,
-                          }}
-                          size={15}
-                          color={'#00BBB4'}
-                        />
-                      ) : null}
-                    </View>
-                  </TouchableOpacity>
-                </View>
-              ))}
-            </ScrollView>
+                            paddingLeft: 5,
+                            padding: 5,
+                            color: fooods.includes(number)
+                              ? '#00BBB4'
+                              : 'white',
+                            textShadowColor: 'gray',
+                            textShadowOffset: {width: 0, height: 0},
+                            textShadowRadius: 5,
+                          }}>
+                          {number}
+                        </Text>
+                        {fooods.includes(number) ? (
+                          <MaterialIcons
+                            name="check"
+                            style={{
+                              marginTop: 3,
+                            }}
+                            size={15}
+                            color={'#00BBB4'}
+                          />
+                        ) : null}
+                      </View>
+                    </TouchableOpacity>
+                  </View>
+                ))}
+              </ScrollView>
+            </View>
+
+            <TouchableOpacity
+              onPress={() => {
+                props.setFooditems(fooods);
+                setdropView(!dropView);
+              }}>
+              <View
+                style={{
+                  backgroundColor: '#00BBB4',
+                  height: windowHeight * 0.05,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderBottomLeftRadius:10,
+                  borderBottomRightRadius:10
+                }}>
+                <Text style={{color: 'white',fontWeight:'bold' ,fontSize: size.Xsmall()}}>
+                  Update food list
+                </Text>
+              </View>
+            </TouchableOpacity>
           </View>
         ) : null}
       </View>
@@ -1415,8 +1468,8 @@ export default function CompleteProfileScreen(props) {
             style={{
               width: windowWidth * 0.45,
               borderRadius: 5,
-              borderBottomColor:'gray',
-              borderBottomWidth:3,
+              borderBottomColor: 'gray',
+              borderBottomWidth: 3,
               height:
                 props.value.length > 0
                   ? windowHeight * 0.17
@@ -1712,8 +1765,8 @@ export default function CompleteProfileScreen(props) {
             style={{
               width: windowWidth * 0.9,
               borderRadius: 5,
-              borderBottomColor:'gray',
-              borderBottomWidth:3,
+              borderBottomColor: 'gray',
+              borderBottomWidth: 3,
               maxHeight:
                 props.value.length > 0 ? windowHeight * 0.3 : windowWidth * 0.1,
             }}>
@@ -1761,6 +1814,8 @@ export default function CompleteProfileScreen(props) {
         console.log('selectedSingapore');
       } else if (number == 'Malaysia') {
         // setselectedLocation('Malaysia');
+        setResidence('');
+        setResidenceText('Region');
         console.log('selectedMalaysia');
       }
       props.setselected(number);
@@ -1810,8 +1865,8 @@ export default function CompleteProfileScreen(props) {
             style={{
               width: windowWidth * 0.9,
               borderRadius: 5,
-              borderBottomColor:'gray',
-              borderBottomWidth:3,
+              borderBottomColor: 'gray',
+              borderBottomWidth: 3,
               maxHeight:
                 props.value.length > 0 ? windowHeight * 0.3 : windowWidth * 0.1,
             }}>
@@ -2067,9 +2122,9 @@ export default function CompleteProfileScreen(props) {
           body.dob = dob;
         } else {
           if (monthob == '' && yearob == '') {
-            console.log('NO Dob')
+            console.log('NO Dob');
           } else {
-           showError('Enter both year and date of birth');
+            showError('Enter both year and date of birth');
             setloading(false);
             return;
           }
@@ -2083,7 +2138,7 @@ export default function CompleteProfileScreen(props) {
         if (Location == 'Singapore' || Location == 'Malaysia') {
           if (Residence != '' || Location != '') {
             if (Residence == '') {
-             showError('Select Region');
+              showError('Select Region');
               setloading(false);
               return;
             }
@@ -2112,11 +2167,11 @@ export default function CompleteProfileScreen(props) {
         dispatch(actions.setAuth(true));
         // checkUserDetails();
       } else {
-       showError('Name field cannot be empty');
+        showError('Name field cannot be empty');
       }
     } catch (e) {
       console.log('e', e.response.data);
-     showError(e.response.data.error);
+      showError(e.response.data.error);
       setloading(false);
     }
   };
@@ -2141,7 +2196,7 @@ export default function CompleteProfileScreen(props) {
         setloading(false);
       } else {
         setloading(false);
-       showError('error fetching user data');
+        showError('error fetching user data');
       }
     }
   };
@@ -2180,7 +2235,10 @@ export default function CompleteProfileScreen(props) {
             '#1B1D2A',
             '#1B1D2A',
           ]}
-          style={{flex: 1}}>
+          style={{
+            flex: 1,
+            paddingTop: Platform.OS == 'ios' ? windowHeight * 0.05 : 0,
+          }}>
           {/* <InputfieldsContainer /> */}
           <ScrollView contentContainerStyle={{paddingBottom: 100}}>
             <KeyboardAvoidingView
@@ -2196,7 +2254,7 @@ export default function CompleteProfileScreen(props) {
                   // keyboardShouldPersistTaps="always"
                   contentContainerStyle={
                     {
-                      // paddingBottom: 20,
+                      // paddingTop: windowHeight,
                       // height:'100%',
                       // gap:5,
                       // justifyContent: 'space-evenly',
@@ -2325,7 +2383,12 @@ export default function CompleteProfileScreen(props) {
                     </ScrollView>
                   </View> */}
 
-                    <DropdownView4 text={Foodtext} value={foodArray} />
+                    <DropdownView4
+                      text={Foodtext}
+                      value={foodArray}
+                      Fooditems={foodItems}
+                      setFooditems={setfoodItems}
+                    />
 
                     {/* {showFoodList == true ? (
                   <View
@@ -2401,7 +2464,7 @@ const styles = StyleSheet.create({
   },
 
   InputfieldsContainer: {
-    height: windowHeight * 0.58,
+    height: Platform.OS == 'ios' ? windowHeight * 0.48 : windowHeight * 0.58,
     // backgroundColor: 'orange',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -2418,7 +2481,7 @@ const styles = StyleSheet.create({
   },
   textInput: {
     width: windowWidth * 0.9,
-    // height: windowHeight * 0.05,
+    height:Platform.OS=='ios'? windowHeight * 0.05:null,
     backgroundColor: '#00BBB4',
 
     borderRadius: 5,

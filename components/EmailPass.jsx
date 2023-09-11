@@ -14,12 +14,22 @@ import Octicons from 'react-native-vector-icons/Octicons';
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 
-function EmailPass({handleEmailChange, handlePasswordChange}) {
+function EmailPass({handleEmailChange, handlePasswordChange,email,password}) {
   const [Email, setEmail] = useState('')
   const [Password, setPassword] = useState('')
   const [showPassword, setshowPassword] = useState(false);
   const [focusedEmail, setfocusedEmail] = useState(false);
   const [focusedPass, setfocusedPass] = useState(false);
+  const handleOnChangeEmail=(val)=>{
+    console.log('val', val)
+    handleEmailChange(val)
+    setEmail(val)
+  }
+  const handleOnChangePassword=(val)=>{
+    console.log('val', val)
+    handlePasswordChange(val)
+    setPassword(val)
+  }
   return (
     <View style={{height: windowHeight * 0.2}}>
       <View
@@ -41,11 +51,11 @@ function EmailPass({handleEmailChange, handlePasswordChange}) {
           placeholder="Email ID"
           keyboardType="email-address"
           autoCapitalize="none"
-          value={Email}
+          value={email}
           placeholderTextColor={focusedEmail == true ? '#00BBB4' : 'white'}
-          onChangeText={setEmail}
+          onChangeText={val=> handleOnChangeEmail(val)}
           onFocus={() => setfocusedEmail(true)}
-          onBlur={() => {setfocusedEmail(false);handleEmailChange(Email)}}
+          onBlur={() => {setfocusedEmail(false)}}
         />
       </View>
       <View style={{...styles.inputContainer,borderBottomColor: focusedPass == true ? '#00BBB4' : 'white',
@@ -55,12 +65,11 @@ function EmailPass({handleEmailChange, handlePasswordChange}) {
           style={{...styles.input, width: '80%',color:focusedPass==true?'#00BBB4':'white'}} //15 remaining
           placeholder="Password"
           onFocus={() => setfocusedPass(true)}
-          onBlur={() => {setfocusedPass(false),handlePasswordChange(Password)}}
-          value={Password}
-
+          onBlur={() => {setfocusedPass(false)}}
+          value={password}
           secureTextEntry={showPassword == true ? false : true}
           placeholderTextColor={focusedPass==true?'#00BBB4':'white'}
-          onChangeText={setPassword}
+          onChangeText={val=>handleOnChangePassword(val)}
         />
         <TouchableOpacity
           style={{

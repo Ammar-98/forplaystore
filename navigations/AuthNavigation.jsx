@@ -10,6 +10,7 @@ import CompleteProfileScreen from '../screens/CompleteProfileScreen';
 import ForgotPassword from '../screens/ForgotPassword';
 import HomeScreen from '../screens/HomeScreen';  //this shold be in bottom navigation bar
 // import MenuScreen from '../screens/MenuScreen';
+import Varification from '../screens/Varification';
 import EditProfile from '../screens/EditProfile';
 
 function AuthNavigation() {
@@ -32,7 +33,9 @@ function AuthNavigation() {
         />
         <AuthStack.Screen name="ForgotPassword" component={ForgotPassword} />
         <AuthStack.Screen name="EditProfile" component={EditProfile} />
+        <AuthStack.Screen name="Varification" component={Varification} />
 
+        
         {/* <Stack.Screen name="HomeScreen" component={HomeScreen} /> */}
 
         {/* <Stack.Screen name="MenuScreen" component={MenuScreen} /> */}

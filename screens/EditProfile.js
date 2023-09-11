@@ -11,6 +11,7 @@ import {
   ActivityIndicator,
   Keyboard,
   FlatList,
+  Platform,
 } from 'react-native';
 import {useFocusEffect} from '@react-navigation/native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
@@ -1817,6 +1818,8 @@ borderBottomWidth:3,
       } else if (number == 'Malaysia') {
         // setselectedLocation('Malaysia');
         console.log('selectedMalaysia');
+        setResidence('');
+        setResidenceText('Region');
       }
       props.setselected(number);
       props.setText(number);
@@ -2319,7 +2322,7 @@ borderBottomWidth:3,
           ]}
           style={{flex: 1}}>
           {/* <InputfieldsContainer /> */}
-          <ScrollView contentContainerStyle={{paddingBottom: 100}}>
+          <ScrollView contentContainerStyle={{paddingBottom: 100,paddingTop:Platform.OS=='ios'?windowHeight*0.04:0}}>
             <KeyboardAvoidingView
               behavior="position"
               keyboardVerticalOffset={20}>
@@ -2560,7 +2563,7 @@ const styles = StyleSheet.create({
   },
   textInput: {
     width: windowWidth * 0.9,
-    // height: windowHeight * 0.05,
+    height:Platform.OS=='android'?null: windowHeight * 0.05,
     backgroundColor: '#00BBB4',
     borderRadius: 5,
     marginTop: 5,

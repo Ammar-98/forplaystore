@@ -4,6 +4,7 @@ import {
   View,
   FlatList,
   ActivityIndicator,
+  Platform,
 } from 'react-native';
 import React from 'react';
 import {Dimensions} from 'react-native';
@@ -247,9 +248,11 @@ const styles = StyleSheet.create({
     height: windowHeight * 0.2,
     width: windowWidth,
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent:Platform.OS=='ios'?'flex-end' :'center',
+    paddingBottom:Platform.OS=='ios'? windowHeight*0.02:0,
     borderBottomColor: 'gray',
     borderBottomWidth: 1,
+    // backgroundColor:'red'
   },
   HeaderText: {
     fontSize: size.Xlarge(),

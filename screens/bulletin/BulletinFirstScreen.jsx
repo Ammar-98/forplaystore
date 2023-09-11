@@ -8,6 +8,7 @@ import {
   SafeAreaView,
   TouchableOpacity,
   Alert,
+  Platform,
 } from 'react-native';
 import {RefreshControl} from 'react-native';
 import React from 'react';
@@ -306,7 +307,7 @@ paddingHorizontal:20,paddingVertical:10,
     <ImageBackground
       source={require('../../assets/linearbg.png')}
       style={{flex: 1}}>
-      <View>
+      <View style={{marginTop:Platform.OS=='ios'?windowHeight*0.06:0}}>
         <View style={styles.container}>
           <Text style={[styles.topText]}>
             JOBS
@@ -319,7 +320,7 @@ paddingHorizontal:20,paddingVertical:10,
         <View
           style={{
             width: '100%',
-            height: windowHeight * 0.8,
+            height:Platform.OS=='ios'?windowHeight * 0.74: windowHeight * 0.8,
             // backgroundColor:'red'
           }}>
           <FlatList

@@ -9,7 +9,20 @@ import {
   TouchableOpacity,
   KeyboardAvoidingView,
   ActivityIndicator,
+  Alert,
 } from 'react-native';
+import {
+  LoginButton,
+  AccessToken,
+  Profile,
+  LoginManager,
+  GraphRequest,
+} from 'react-native-fbsdk-next';
+import {
+  GoogleSignin,
+  GoogleSigninButton,
+  statusCodes,
+} from '@react-native-google-signin/google-signin';
 import {ScrollView} from 'react-native';
 import CheckBox from '@react-native-community/checkbox';
 import EmailPass from '../components/EmailPass';
@@ -18,11 +31,13 @@ import ButtonGradient from '../components/ButtonGradient';
 import Button from '../components/Button';
 import axios from 'axios';
 import {axiosPost} from '../axios/axios';
+import appleAuth from '@invertase/react-native-apple-authentication';
 import {axiosPostAuth} from '../axios/axios';
 import {Dimensions} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as size from '../components/FontSize';
 import Octicons from 'react-native-vector-icons/Octicons';
+import {useEffect} from 'react';
 
 // import tw from 'nativewind'
 
@@ -37,12 +52,197 @@ const SignupForm = props => {
   const [rememberMe, setRememberMe] = useState(false);
   const [errorMessage, seterrorMessage] = useState('');
   const [loading, setloading] = useState(false);
-  const [cpfocused, setcpfocused] = useState(false)
+  const [cpfocused, setcpfocused] = useState(false);
 
   console.log(password);
   console.log(email);
   console.log(rememberMe);
 
+  useEffect(() => {
+    GoogleSignin.configure({
+      webClientId:
+        '568493759154-gq306fkp03ueah3tm8u27lse8vlequ1i.apps.googleusercontent.com', // client ID of type WEB for your server (needed to verify user ID and offline access)
+    });
+  }, []);
+  const signOut = async () => {
+    try {
+      console.log('hereSignOUt');
+      // await GoogleSignin.revokeAccess();
+      await GoogleSignin.signOut();
+      // this.setState({ user: null }); // Remember to remove the user from your app's state as well
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const convertToLowerCase = () => {
+    let temp = email;
+    temp = String(temp).toLowerCase();
+    setEmail(temp);
+    handleSignup(temp, password);
+  };
+  const googleCredentials2 = async (email, password) => {
+    console.log('email', email);
+    console.log('password', password);
+
+    try {
+      const urlToHit = 'https://api.kachaak.com.sg/api/auth/user/login';
+      const config = {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      };
+      const body = JSON.stringify({
+        email: email,
+        password: password,
+      });
+      const response = await axiosPostAuth(urlToHit, body, config);
+      if (response.data !== undefined) {
+        saveToken(response.data.token);
+        setloading(false);
+        // dispatch(actions.setAuth());
+        props.navigation.navigate('CompleteProfileScreen');
+      } else {
+        setloading(false);
+        Alert.alert('Login error:100');
+        signOut();
+      }
+    } catch (e) {
+      console.log('easass', e.response.data.error);
+      setloading(false);
+      seterrorMessage('Email already registered');
+      signOut();
+    }
+  };
+  const googleCredentials = async (email, password) => {
+    console.log('email', email);
+    console.log('password', password);
+    try {
+      setloading(true);
+      const urlToHit = 'https://api.kachaak.com.sg/api/auth/user/signup';
+
+      const config = {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      };
+
+      const body = JSON.stringify({
+        email: email,
+        password: password,
+        isVerified: true,
+      });
+
+      // navigation.navigate('CompleteProfileScreen');s
+      console.log('email', email);
+      console.log('password', password);
+
+      const response = await axiosPostAuth(urlToHit, body, config);
+      // console.log('response', response.data.data);
+      const res = response.data.data;
+      console.log('resSignup', res);
+
+      if (String(res) == 'sucess') {
+        // props.navigation.navigate('LoginScreen');
+        googleCredentials2(email, password);
+      }
+    } catch (e) {
+      googleCredentials2(email, password);
+
+      // setloading(false);
+      console.log('SignupError==>', e.response?.data?.error);
+      // seterrorMessage(e.response?.data?.error);
+      signOut();
+    }
+  };
+  const handlegooglelogin = async () => {
+    try {
+      await GoogleSignin.hasPlayServices();
+      const userInfo = await GoogleSignin.signIn();
+      console.log('userInfo', userInfo);
+      console.log('idtoken', userInfo.user.id);
+      console.log('userInfo', userInfo.user.email);
+      googleCredentials(userInfo.user.email, userInfo.user.id);
+    } catch (error) {
+      if (error.code === statusCodes.SIGN_IN_CANCELLED) {
+        // user cancelled the login flow
+        console.log('error.code', error.code);
+        Alert.alert('error');
+      } else if (error.code === statusCodes.IN_PROGRESS) {
+        // operation (e.g. sign in) is in progress already
+        console.log('error.code', error.code);
+        Alert.alert('error');
+      } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
+        // play services not available or outdated
+        console.log('error.code', error.code);
+        Alert.alert('error');
+      } else {
+        // some other error happened
+        Alert.alert('error');
+      }
+    }
+  };
+  const handlefblogin = async () => {
+    try {
+      console.log('fb');
+      LoginManager.logInWithPermissions(['public_profile']).then(
+        function (result) {
+          if (result.isCancelled) {
+            console.log('Login cancelled');
+          } else {
+            console.log(
+              'Login success with permissions: ' +
+                result.grantedPermissions.toString(),
+            );
+            // getAccessToken()
+            // initUser(accessToken)
+            const currentProfile = Profile.getCurrentProfile().then(function (
+              currentProfile,
+            ) {
+              if (currentProfile) {
+                console.log(
+                  'The current logged user is: ' +
+                    currentProfile.name +
+                    '. His profile id is: ' +
+                    currentProfile.userID,
+                );
+                const email =
+                  currentProfile.firstName +
+                  currentProfile.userID +
+                  '@gmail.com';
+                const password = currentProfile.userID;
+                googleCredentials(email, password);
+              }
+            });
+          }
+        },
+        function (error) {
+          console.log('Login fail with error: ' + error);
+        },
+      );
+      // const currentProfile = await Profile.getCurrentProfile()
+      // console.log('currentProfile', currentProfile)
+    } catch (error) {
+      console.log('error', error);
+    }
+  };
+  const handleAppleLogin = async () => {
+    try {
+      const res = await appleAuth.performRequest({
+        requestedOperation: appleAuth.Operation.LOGIN,
+        requestedScopes: [appleAuth.Scope.EMAIL, appleAuth.Scope.FULL_NAME],
+      });
+      console.log('resAppleLogin==>>', res);
+
+      const repRes = String(res.user).replace(/\./g, '_');
+      console.log('res.', repRes);
+      const email = repRes + '@gmail.com';
+      const password = repRes;
+      googleCredentials(email, password);
+    } catch (error) {
+      console.log('error', error);
+    }
+  };
   const handleEmailChange = text => {
     setEmail(text), seterrorMessage('');
   };
@@ -92,7 +292,7 @@ const SignupForm = props => {
     }
   };
 
-  const handleSignup = async () => {
+  const handleSignup = async (email, password) => {
     // console.log('password.length', String(password).length)
     seterrorMessage('');
     if (validateEmail(email)) {
@@ -125,8 +325,12 @@ const SignupForm = props => {
             if (String(res) == 'sucess') {
               // props.navigation.navigate('LoginScreen');
               Login();
+            } else if (res == 'check your email to verify') {
+              setloading(false);
+              // Alert.alert('add varification flow here');
+              props.navigation.navigate('Varification');
             }
-            setloading(false);
+            console.log('res', res);
           } catch (e) {
             setloading(false);
             console.log('SignupError==>', e.response?.data?.error);
@@ -160,7 +364,7 @@ const SignupForm = props => {
               style={{
                 // backgroundColor: 'green',
                 width: windowWidth,
-                height: windowHeight * 0.4,
+                height: windowHeight * 0.35,
                 alignItems: 'center',
                 justifyContent: 'center',
               }}>
@@ -177,21 +381,31 @@ const SignupForm = props => {
               <EmailPass //height 0.2
                 handleEmailChange={handleEmailChange}
                 handlePasswordChange={handlePasswordChange}
+                email={email}
+                password={password}
               />
             </View>
 
             <View style={{width: windowWidth, alignItems: 'center'}}>
               <View style={styles.inputContainer}>
-                <Octicons name={'lock'} size={17} color={cpfocused==true?'#00BBB4':'white'} />
+                <Octicons
+                  name={'lock'}
+                  size={17}
+                  color={cpfocused == true ? '#00BBB4' : 'white'}
+                />
                 <TextInput
-                  style={{...styles.input, width: '80%',color:cpfocused==true?'#00BBB4':'white'}} //15 remaining
+                  style={{
+                    ...styles.input,
+                    width: '80%',
+                    color: cpfocused == true ? '#00BBB4' : 'white',
+                  }} //15 remaining
                   placeholder="Confirm Password"
                   secureTextEntry={showPassword == true ? false : true}
-                  placeholderTextColor={cpfocused==true?'#00BBB4':'white'}
+                  placeholderTextColor={cpfocused == true ? '#00BBB4' : 'white'}
                   value={confirmPassword}
                   onChangeText={handleconfirmPass}
-                  onFocus={()=>setcpfocused(true)}
-                  onBlur={()=>setcpfocused(false)}
+                  onFocus={() => setcpfocused(true)}
+                  onBlur={() => setcpfocused(false)}
                 />
                 <TouchableOpacity
                   style={{
@@ -201,7 +415,9 @@ const SignupForm = props => {
                     // alignItems: 'center',
                     // justifyContent: 'center',
                   }}
-                  onPress={() => {setshowPassword(!showPassword);}}>
+                  onPress={() => {
+                    setshowPassword(!showPassword);
+                  }}>
                   <View
                     style={{
                       width: '100%',
@@ -213,7 +429,7 @@ const SignupForm = props => {
                     <Octicons
                       name={showPassword == true ? 'eye' : 'eye-closed'}
                       size={17}
-                      color={cpfocused==true?'#00BBB4':'white'}
+                      color={cpfocused == true ? '#00BBB4' : 'white'}
                     />
                   </View>
                 </TouchableOpacity>
@@ -229,6 +445,8 @@ const SignupForm = props => {
                   // backgroundColor: 'white',
                 }}>
                 <Text
+                  numberOfLines={2}
+                  adjustsFontSizeToFit
                   style={{
                     color: 'red',
                     textShadowColor: 'black',
@@ -237,6 +455,7 @@ const SignupForm = props => {
                     // margin: 5,
                     fontSize: size.medium(),
                     textAlign: 'center',
+                    paddingHorizontal: 5,
                     // marginBottom: windowHeight * 0.05,
                   }}>
                   {errorMessage}
@@ -248,7 +467,7 @@ const SignupForm = props => {
           <View
             style={{
               width: windowWidth,
-              height: windowHeight * 0.25, //total6
+              // height: windowHeight * 0.25, //total6
               // backgroundColor: 'orange',
               alignItems: 'center',
             }}>
@@ -256,11 +475,11 @@ const SignupForm = props => {
               style={{
                 // backgroundColor: 'blue',
                 width: windowWidth,
-                height: windowHeight * 0.22,
+                // height: windowHeight * 0.22,
                 alignItems: 'center',
               }}>
               <TouchableOpacity
-                onPress={loading == true ? null : () => handleSignup()}
+                onPress={loading == true ? null : () => convertToLowerCase()}
                 style={{width: '40%'}}>
                 <View
                   style={{
@@ -285,11 +504,120 @@ const SignupForm = props => {
               </TouchableOpacity>
               <View
                 style={{
+                  // height: windowHeight * 0.05,
+                height: windowHeight * 0.18,
+
+                  width: windowWidth,
+                  // backgroundColor:'red',
+                  // flexDirection: 'row',
+                  justifyContent: 'space-evenly',
+                  alignItems: 'center',
+                }}>
+                <TouchableOpacity onPress={() => handlefblogin()}>
+                  <View
+                    style={{
+                      height: windowHeight * 0.05,
+                      width: windowWidth * 0.7,
+                      borderRadius: 20,
+                      backgroundColor: '#D4D4D4',
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      // justifyContent:'space-between',
+                      paddingLeft: 14,
+                    }}>
+                    <Image
+                      style={{
+                        height: windowHeight * 0.045,
+                        width: windowHeight * 0.045,
+                        borderRadius: windowHeight * 0.025,
+                      }}
+                      resizeMode="contain"
+                      source={require('../assets/fblogo.png')}
+                    />
+                    <Text
+                    style={{
+                      color: 'black',
+                      fontSize: size.small(),
+                      paddingLeft: 14,
+                    }}>
+                    Sign-Up with Facebook
+                  </Text>
+                  </View>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => handlegooglelogin()}>
+                  {/* <Text style={{color: 'white'}}>Google</Text> */}
+                  <View
+                    style={{
+                      height: windowHeight * 0.05,
+                      width: windowWidth * 0.7,
+                      borderRadius: 20,
+                      backgroundColor: '#D4D4D4',
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      // justifyContent:'space-between',
+                      paddingLeft: 14,
+                    }}>
+                    <Image
+                      style={{
+                        height: windowHeight * 0.05,
+                        width: windowHeight * 0.05,
+                      }}
+                      resizeMode="contain"
+                      source={require('../assets/googlelogo.png')}
+                    />
+                    <Text
+                    style={{
+                      color: 'black',
+                      fontSize: size.small(),
+                      paddingLeft: 14,
+                    }}>
+                    Sign-Up with Google
+                  </Text>
+                  </View>
+                </TouchableOpacity>
+                {Platform.OS == 'ios' ? (
+                  <TouchableOpacity onPress={() => handleAppleLogin()}>
+                    {/* <Text style={{color: 'white'}}>Google</Text> */}
+                    <View
+                      style={{
+                        height: windowHeight * 0.05,
+                        width: windowWidth * 0.7,
+                        borderRadius: 20,
+                        backgroundColor: '#D4D4D4',
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        // justifyContent:'space-between',
+                        paddingLeft: 14,
+                      }}>
+                      <Image
+                        style={{
+                          height: windowHeight * 0.05,
+                          width: windowHeight * 0.05,
+                          borderRadius: windowHeight * 0.025,
+                        }}
+                        resizeMode="contain"
+                        source={require('../assets/Apple-logo.png')}
+                      />
+                      <Text
+                    style={{
+                      color: 'black',
+                      fontSize: size.small(),
+                      paddingLeft: 14,
+                    }}>
+                    Sign-Up with Apple
+                  </Text>
+                    </View>
+                  </TouchableOpacity>
+                ) : null}
+              </View>
+              <View
+                style={{
                   justifyContent: 'center',
                   alignItems: 'center',
                   flexDirection: 'row',
                   // height: windowHeight * 0.1,
                   width: windowHeight,
+                  marginTop: 5,
                   // backgroundColor: 'blue',
                 }}>
                 <Text style={[styles.text]}>Already have an account?</Text>
@@ -339,7 +667,7 @@ const styles = StyleSheet.create({
     width: '88%',
     color: 'white',
     marginLeft: '2%',
-    fontSize:size.small()
+    fontSize: size.small(),
     // backgroundColor:'green'
     // borderColor: 'blue',
     // borderWidth: 2,

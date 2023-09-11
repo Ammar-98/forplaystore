@@ -18,7 +18,6 @@ import {useEffect, useState, useRef} from 'react';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import SimpleLineIcons from 'react-native-vector-icons/SimpleLineIcons';
 
-
 import * as size from '../../components/FontSize';
 
 import {Dimensions} from 'react-native';
@@ -26,6 +25,7 @@ import Share from 'react-native-share';
 import RNFS from 'react-native-fs';
 import RNFetchBlob from 'react-native-fetch-blob';
 import {Overlay} from 'react-native-elements';
+import {PERMISSIONS, request} from 'react-native-permissions';
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 export default function ProfileSecondScreen(props) {
@@ -47,35 +47,37 @@ export default function ProfileSecondScreen(props) {
 
   const shareImage = async url => {
     try {
-      setloading(false);
+      {
+        Platform.OS == 'android' ? setloading(false) : null;
+      }
       const shareOptions = {
         title: 'Share via',
         url: url, // Replace with the actual URI of your image
-        social: 'instagram',
+        // social: 'instagram',
       };
 
-      await Share.open(shareOptions);
+      const res = await Share.open(shareOptions);
+      console.log('res', res);
+      setloading(false);
     } catch (error) {
       console.log('Error sharing image:', error.message);
+  {Platform.OS=='ios'?    setloading(false):null}
+
     }
   };
 
   const requestStoragePermission = async img => {
     try {
-      const granted = await PermissionsAndroid.request(
-        PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
-      );
-      if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-        console.log('You can use the Storage');
-        downloadImage2(img);
-      } else {
-        console.log('Storage permission denied');
-        downloadImage2(img);
-      }
+      const granted = await request(PERMISSIONS.IOS.PHOTO_LIBRARY);
+      const granted1 = await request(PERMISSIONS.IOS.MEDIA_LIBRARY);
+      const granted2 = await request(PERMISSIONS.IOS.PHOTO_LIBRARY_ADD_ONLY);
+
+      console.log('Permission result', granted, granted1, granted2); // Log the result
     } catch (err) {
       console.warn(err);
     }
   };
+
   const downloadImage2 = async img => {
     try {
       setloading(true);
@@ -89,14 +91,18 @@ export default function ProfileSecondScreen(props) {
         ext;
 
       const {config, fs} = RNFetchBlob;
-      const pictureDir = fs.dirs.PictureDir;
+      const pictureDir =
+        Platform.OS == 'android' ? fs.dirs.PictureDir : fs.dirs.DocumentDir;
+      console.log('pictureDir==>', pictureDir);
       const options = {
         fileCache: true,
         path: pictureDir + '/' + fileName,
       };
 
       const res = await config(options).fetch('GET', imageURL);
+      console.log('res', res);
       let imagePath = res.path();
+
       imagePath = 'file://' + imagePath;
 
       // Alert.alert('Image Downloaded successfully');
@@ -159,14 +165,19 @@ export default function ProfileSecondScreen(props) {
     console.log('propshere', props.data);
     return (
       <View style={styles.dropdownView}>
-        <View style={{
-    backgroundColor: 'rgba(0, 0, 0, 0.65)',width:'100%',padding:20,borderRadius:7,alignItems:'center'
+        <View
+          style={{
+            backgroundColor: 'rgba(0, 0, 0, 0.65)',
+            width: '100%',
+            padding: 20,
+            borderRadius: 7,
+            alignItems: 'center',
+          }}>
+          <TouchableOpacity onPress={() => downloadImage2(props.data)}>
+            {/* <TouchableOpacity onPress={() => requestStoragePermission()}> */}
 
-        }}>
-          
-        <TouchableOpacity onPress={() => downloadImage2(props.data)}>
-          <Text style={{fontSize: size.small(), color: 'white'}}>Share</Text>
-        </TouchableOpacity>
+            <Text style={{fontSize: size.small(), color: 'white'}}>Share</Text>
+          </TouchableOpacity>
         </View>
         <TouchableOpacity
         // onPress={() => requestStoragePermission(props.data)}
@@ -200,10 +211,10 @@ export default function ProfileSecondScreen(props) {
               alignItems: 'center',
             }}>
             <SimpleLineIcons
-                name={ 'options-vertical'}
-                size={17}
-                color='white'
-              />
+              name={'options-vertical'}
+              size={17}
+              color="white"
+            />
           </TouchableOpacity>
         </View>
         <View
@@ -226,7 +237,7 @@ export default function ProfileSecondScreen(props) {
         <View
           style={{
             // backgroundColor: 'black',
-            paddingTop:5,
+            paddingTop: 5,
             width: '100%',
             height: windowHeight * 0.15,
             flexDirection: 'row',
@@ -247,13 +258,9 @@ export default function ProfileSecondScreen(props) {
                 resizeMode: 'cover',
               }}
             /> */}
-            <MaterialIcons
-                name={ 'share'}
-                size={40}
-                color='#00BBB4'
-              />
+            <MaterialIcons name={'share'} size={40} color="#00BBB4" />
           </View>
-          <View style={{width: windowWidth * 0.75,}}>
+          <View style={{width: windowWidth * 0.75}}>
             <Text style={styles.Text1}>
               Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
               nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam
@@ -272,7 +279,10 @@ export default function ProfileSecondScreen(props) {
       <FlatList
         data={fullData}
         ref={ref}
-        contentContainerStyle={{paddingBottom: windowHeight * 0.2}}
+        contentContainerStyle={{
+          paddingBottom: windowHeight * 0.2,
+          paddingTop: Platform.OS == 'ios' ? windowHeight * 0.1 : 0,
+        }}
         keyExtractor={item => String(item.id)}
         renderItem={({item, index}) => {
           return <FlatImageView item={item} index={index} />;
@@ -302,7 +312,7 @@ const styles = StyleSheet.create({
   FlatImageView: {
     width: windowWidth,
     height: windowHeight * 0.95,
-    backgroundColor: '#2B2D3A',
+    // backgroundColor: '#2B2D3A',
     borderWidth: 0.2,
     borderColor: 'rgba(0,0,0,0.3)',
     // backgroundColor:'red'
@@ -315,7 +325,7 @@ const styles = StyleSheet.create({
   dropdownView: {
     ...StyleSheet.absoluteFillObject,
     // height: 100,
-    height:windowHeight*0.1,
+    height: windowHeight * 0.1,
     width: windowWidth * 0.3,
     // backgroundColor: 'white',
     zIndex: 1,
@@ -324,7 +334,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     // backgroundColor: 'rgba(0, 0, 0, 0.65)',
     rowGap: 10,
-    borderRadius:5,
+    borderRadius: 5,
     // position:'absolute'
   },
 });
